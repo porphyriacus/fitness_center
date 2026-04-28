@@ -9,10 +9,10 @@ namespace Core.Interfaces.Repositories
 {
     public interface IMembershipTypeRepository
     {
-        Task<MembershipType?> GetByIdAsync(Guid id);
-        Task<IEnumerable<MembershipType>> GetAllAsync();
-        Task AddAsync(MembershipType type);
-        Task UpdateAsync(MembershipType type);
-        Task DeleteAsync(Guid id);
+        Task<MembershipType?> GetByIdAsync(Guid id, CancellationToken cansel);
+        Task<IEnumerable<MembershipType>> GetAllAsync(CancellationToken cansel);
+        Task AddAsync(MembershipType type, CancellationToken cansel);
+        Task UpdateAsync(MembershipType type, CancellationToken cansel);
+        Task DeleteAsync(Guid id, CancellationToken cansel);
     }
 }

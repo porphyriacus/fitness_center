@@ -22,7 +22,7 @@ namespace Core.Entities
         /// 
         /// </summary>
         /// <param name="id"> уникальный идентификатор </param>
-        /// <param name="name">не должно быть пустым. может быть уникальным</param>
+        /// <param name="name">не должно быть пустым. может не быть уникальным</param>
         /// <param name="contact">контакты для входа в приложение</param>
         /// <param name="profilePhotoUrl">возможность поставить аватарку. если не выбрана то будет скучная по умолчанию</param>
         /// <exception cref="Exception"></exception>
