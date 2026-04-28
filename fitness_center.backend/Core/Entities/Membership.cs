@@ -17,12 +17,19 @@ namespace Core.Entities
     {
         public Guid Id { get; private set; }
         public Guid ClientId { get; private set; }
+
         public DateTime? ActivatedDate { get; private set; }
         public DateTime? ExpireDate { get; private set; }
+
+
+        public int ValidityDays {  get; private set; }
         public int? SessionsLeft { get; private set; }
+
         public bool IsFrozen { get; private set; }
         public DateTime? FrozenUntil { get; private set; }
-        public bool FreezeUsed { get; internal set; }
+        public bool FreezeUsed { get; private set; }
+
+        public bool IsFinished { get; private set; }
 
         private readonly IVisitStrategy _visitStrategy;
         private readonly IFreezeStrategy _freezeStrategy;
@@ -38,25 +45,27 @@ namespace Core.Entities
             Guid clientId,
             IVisitStrategy visitStrategy,
             IFreezeStrategy freezeStrategy,
+            int validityDays,
             int? sessionsLeft = null)
         {
+            if (clientId == Guid.Empty) throw new ArgumentNullException(nameof(clientId), "Абонемент должен быть привязан к клдиенту");
+            if (visitStrategy == null) throw new ArgumentNullException(nameof(visitStrategy), "Нужно явно указать стратегию поведения при посещении занятия");
+            if (freezeStrategy == null) throw new ArgumentNullException(nameof(freezeStrategy), "Нужно явно указать стратегию поведения при заморозке абонемента");
+            if (validityDays <= 0) throw new ArgumentException(nameof(validityDays),"Время действия абонемента должно быть положительным числом");
+
             Id = Guid.NewGuid();
             ClientId = clientId;
             SessionsLeft = sessionsLeft;
             _visitStrategy = visitStrategy;
             _freezeStrategy = freezeStrategy;
+            ValidityDays = validityDays;
             ActivatedDate = null;
             ExpireDate = null;
             IsFrozen = false;
+            IsFinished = false;
             FreezeUsed = false;
         }
 
-        internal void SetValidityDays(int days)
-        {
-            // длительность считается с начала активации
-            _validityDays = days;
-        }
-        private int _validityDays;
 
         // активация при первом посещении
         private void Activate()
@@ -64,17 +73,28 @@ namespace Core.Entities
             if (ActivatedDate == null)
             {
                 ActivatedDate = DateTime.UtcNow;
-                ExpireDate = ActivatedDate.Value.AddDays(_validityDays);
+                ExpireDate = ActivatedDate.Value.AddDays(ValidityDays);
             }
         }
 
+        /// <summary>
+        /// Логика посещения занятия
+        ///     Желательно проверять возможность бронирования методом IsActiveForBooking()
+        ///     Если абонемент заморожен, необходимо рпедварительно снять заморозку(Unfreeze)
+        /// </summary>
+        /// <exception cref="MembershipFinishedException"></exception>
         public void Visit()
         {
+            if (IsFrozen)
+                throw new MembershipFreezeException("Для посещения занятия необходимо чтобы абонемент не был заморожен");
             if (!_visitStrategy.CanVisit(this))
-                throw new MembershipException("Посещение невозможно: абонемент неактивен");
-
+            {
+                IsFinished = true;
+                throw new MembershipFinishedException("Посещение невозможно: абонемент закончился");
+            }
+            
+         
             Activate(); 
-
             _visitStrategy.ProcessVisit(this);
         }
 
@@ -82,34 +102,50 @@ namespace Core.Entities
         public void Freeze(TimeSpan duration)
         {
             if (!_freezeStrategy.CanFreeze(this))
-                throw new MembershipException("Заморозка недоступна для этого абонемента");
+                throw new MembershipFreezeException("Заморозка недоступна для этого абонемента");
 
             if (IsFrozen)
-                throw new MembershipException("Абонемент уже заморожен");
+                throw new MembershipFreezeException("Абонемент уже заморожен");
 
             _freezeStrategy.ApplyFreeze(this, duration);
-            IsFrozen = true;
-            FrozenUntil = DateTime.UtcNow.Add(duration);
+     
         }
 
         public void Unfreeze()
         {
             if (!IsFrozen) return;
             IsFrozen = false;
+            ExpireDate += _freezeStrategy.Unfreeze(this);
             FrozenUntil = null;
+
         }
         
         //  пока так вообще сомнительно 
+        /// <summary>
+        /// Посещение доступно если:
+        ///     1. абонемент заморожен (если истекло время заморозки автоматич размораживается)
+        ///     2. aбонемент закончился:
+        ///         - время действие абонемента истекло
+        ///         - закончились ззанятия
+        /// </summary>
+        /// <returns>Можно ли обработать посещение</returns>
         public bool IsActiveForBooking()
         {
-            // автоматическое снятие заморозки если срок истёк
-            if (IsFrozen && FrozenUntil <= DateTime.UtcNow)
-                Unfreeze();
-
+            UpdateInfo();
             if (IsFrozen) return false;
-            if (ExpireDate.HasValue && DateTime.UtcNow > ExpireDate.Value) return false;
-            if (SessionsLeft.HasValue && SessionsLeft.Value <= 0) return false;
+            if (IsFinished) return false;
             return true;
+        }
+
+
+        /// <summary>
+        /// обновление информации о статусе абонемента
+        /// </summary>
+        public void UpdateInfo()
+        {
+            if (IsFrozen && FrozenUntil <= DateTime.UtcNow) Unfreeze();
+            if (ExpireDate.HasValue && DateTime.UtcNow > ExpireDate.Value) IsFinished = true;
+            if (SessionsLeft.HasValue && SessionsLeft.Value <= 0) IsFinished = true;
         }
 
         // для стратегий
@@ -119,10 +155,12 @@ namespace Core.Entities
                 SessionsLeft -= count;
         }
 
-        internal void ShiftExpiration(TimeSpan duration)
+        internal void ShiftFrozenExpiration(TimeSpan duration)
         {
-            if (ExpireDate.HasValue)
-                ExpireDate = ExpireDate.Value.Add(duration);
+            IsFrozen = true;
+            FrozenUntil = DateTime.UtcNow.Add(duration);
+            FreezeUsed = true;
         }
+
     }
 }

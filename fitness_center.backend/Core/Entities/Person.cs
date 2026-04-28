@@ -14,8 +14,8 @@ namespace Core.Entities
     public class Person
     {
         public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public IContactInfo? Contact { get; set; }
+        public string Name { get; set; }
+        public IContactInfo Contact { get; set; }
         public string? ProfilePhotoUrl { get; private set; }
 
         /// <summary>
@@ -28,16 +28,12 @@ namespace Core.Entities
         /// <exception cref="Exception"></exception>
         public Person(string? name, IContactInfo? contact, string? profilePhotoUrl = null)
         {
+            if(string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if(contact == null) throw new ArgumentNullException(nameof(contact));
+
             Id = Guid.NewGuid();
-
-            if (string.IsNullOrEmpty(name))
-                throw new Exception("Клиент должен иметь имя");
             Name = name;
-
-            if (contact is null)
-                throw new Exception("Клиент должен иметь контакты");
             Contact = contact;
-
             ProfilePhotoUrl = profilePhotoUrl;
         }
     }

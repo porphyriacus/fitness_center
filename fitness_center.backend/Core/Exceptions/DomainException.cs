@@ -11,10 +11,7 @@ namespace Core.Exceptions
         protected DomainException(string message) : base(message) { }
     }
 
-    public class MembershipException : DomainException
-    {
-        public MembershipException(string message) : base(message) { }
-    }
+    
     public class WorkoutException : DomainException
     {
         public WorkoutException(string message) : base(message) { }

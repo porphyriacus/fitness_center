@@ -35,7 +35,7 @@ namespace Core.Entities
 
         public void ChangeDescription(string? description) {
             if (description?.Length > 160)
-                throw new ArgumentException("Описание не длиннее 160 символов");
+                throw new ArgumentException("Описание не длиннее 255 символов");
             Description = description;
         }
         public void ChangeColor(string? color)

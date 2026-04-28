@@ -26,9 +26,9 @@ namespace Core.Factories
                 clientId,
                 visitStrategy,
                 freezeStrategy,
+                type.ValidityDays,
                 type.SessionsCount
             );
-            membership.SetValidityDays(type.ValidityDays);
             return membership;
         }
     }

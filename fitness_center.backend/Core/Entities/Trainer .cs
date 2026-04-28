@@ -13,7 +13,7 @@ namespace Core.Entities
         public Trainer(string? name, IContactInfo? contact, string? profilePhotoUrl, string? description) :
             base(name, contact, profilePhotoUrl)
         {
-            Description = description?? string.Empty; ;
+            Description = description?? string.Empty; 
         }
     }
 }
