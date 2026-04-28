@@ -9,8 +9,8 @@ namespace Core.Entities
 {
     public class Admin: Person
     {
-        public Admin(Guid id, string? name, IContactInfo? contact) :
-            base(id, name, contact, null)
+        public Admin(string? name, IContactInfo? contact) :
+            base(name, contact, null)
         { }
     }
 }

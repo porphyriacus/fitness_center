@@ -9,8 +9,8 @@ namespace Core.Entities
 {
     public class Client: Person
     {
-        public Client(Guid id, string? name, IContactInfo? contact, string? profilePhotoUrl) :
-            base(id, name, contact, profilePhotoUrl){ }
+        public Client(string? name, IContactInfo? contact, string? profilePhotoUrl) :
+            base(name, contact, profilePhotoUrl){ }
         
     }
 }

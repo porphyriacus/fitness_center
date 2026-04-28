@@ -26,9 +26,9 @@ namespace Core.Entities
         /// <param name="contact">контакты для входа в приложение</param>
         /// <param name="profilePhotoUrl">возможность поставить аватарку. если не выбрана то будет скучная по умолчанию</param>
         /// <exception cref="Exception"></exception>
-        public Person(Guid id, string? name, IContactInfo? contact, string? profilePhotoUrl = null)
+        public Person(string? name, IContactInfo? contact, string? profilePhotoUrl = null)
         {
-            Id = id;
+            Id = Guid.NewGuid();
 
             if (string.IsNullOrEmpty(name))
                 throw new Exception("Клиент должен иметь имя");
