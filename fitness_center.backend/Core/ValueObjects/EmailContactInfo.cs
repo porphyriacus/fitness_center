@@ -19,5 +19,7 @@ namespace Core.ValueObjects
         }
 
         public override string GetContact() => Email;
+
+        public override string Serialize() => $"Email|{Email}";
     }
 }

@@ -19,5 +19,6 @@ namespace Core.ValueObjects
         }
 
         public override string GetContact() => PhoneNumber;
+        public override string Serialize() => $"Phone|{PhoneNumber}";
     }
 }

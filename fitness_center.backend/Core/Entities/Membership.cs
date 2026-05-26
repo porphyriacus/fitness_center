@@ -2,6 +2,7 @@
 using Core.Strategies;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +31,13 @@ namespace Core.Entities
 
         public bool IsFinished { get; private set; }
 
-        private readonly IVisitStrategy _visitStrategy;
-        private readonly IFreezeStrategy _freezeStrategy;
+        private Membership() { }
 
+        [NotMapped]
+        private readonly IVisitStrategy _visitStrategy;
+
+        [NotMapped]
+        private readonly IFreezeStrategy _freezeStrategy;
         internal Membership(
             int clientId,
             int membershipTypeId, 
