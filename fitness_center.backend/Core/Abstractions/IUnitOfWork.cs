@@ -9,19 +9,20 @@ namespace Core.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Client> Clients { get; }
-        IRepository<Trainer> Trainers { get; }
+        IRepository<Client> ClientRepository { get; }
+        IRepository<Trainer> TrainerRepository { get; }
 
-        IRepository<Booking> Bookings { get; }
+        IRepository<Booking> BookingRepository { get; }
 
-        IRepository<Membership> Memberships { get; }
-        IRepository<MembershipType> MembershipTypes { get; }
+        IRepository<Membership> MembershipRepository { get; }
+        IRepository<MembershipType> MembershipTypeRepository { get; }
 
-        IRepository<Workout> Workouts { get; }
-        IRepository<WorkoutType> WorkoutTypes { get; }
+        IRepository<Workout> WorkoutRepository { get; }
+        IRepository<WorkoutType> WorkoutTypeRepository { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-        Task<int> CommitAsync(CancellationToken cancellationToken = default);
-        Task RollbackAsync(CancellationToken cancellationToken = default);
+        Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+        Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
     }
 }
