@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Core.Entities
 {   
-    public class WorkoutType
+    public class WorkoutType : Entity
     {
-        public Guid Id { get; private set; }
         public string Name { get; private set; }
         public string? Description { get; private set; }
         public int DefaultDurationMinutes {  get; private set; }
@@ -24,7 +23,6 @@ namespace Core.Entities
             if (defaultMaxCapacity <= 0)
                 throw new ArgumentException("Вместимость должна быть положительной", nameof(defaultMaxCapacity));
 
-            Id = Guid.NewGuid();
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Description = description;
             DefaultDurationMinutes = defaultDurationMinutes > 0 ? defaultDurationMinutes : 60;

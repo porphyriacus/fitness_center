@@ -8,8 +8,9 @@ namespace Core.Enums
 {
     public enum BookingStatus
     {
-        Applied = 0,
-        Canceled = 1,
-        NotCome = 2
+        Active, // записался, место занято
+        Cancelled, // отменил
+        NotCome, // не пришёл
+        Completed, // пришёл
     }
 }

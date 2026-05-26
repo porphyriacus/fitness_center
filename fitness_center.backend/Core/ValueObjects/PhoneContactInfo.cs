@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Core.ValueObjects
 {
-    public class PhoneContactInfo : IContactInfo
+    public sealed record PhoneContactInfo : ContactInfo
     {
         public string PhoneNumber { get; }
-        public string Type => "Phone";
+        public override string Type => "Phone";
 
         public PhoneContactInfo(string phoneNumber)
         {
@@ -18,6 +18,6 @@ namespace Core.ValueObjects
             PhoneNumber = phoneNumber;
         }
 
-        public string GetContact() => PhoneNumber;
+        public override string GetContact() => PhoneNumber;
     }
 }

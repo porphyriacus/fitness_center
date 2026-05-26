@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Core.ValueObjects
 {
-    public interface IContactInfo
+    public abstract record ContactInfo
     {
-        string GetContact();
-        string Type { get; } 
+        public abstract string Type { get; }
+        public abstract string GetContact();
     }
-    
+
 }

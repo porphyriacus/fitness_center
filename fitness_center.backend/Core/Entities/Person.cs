@@ -9,32 +9,66 @@ namespace Core.Entities
 {
     /// <summary>
     /// представляет пользователя
-    /// в Application подставить фото профиля по умолчанию
+    /// !!! в Application подставить фото профиля по умолчанию
     /// </summary>
-    public class Person
+    // Core/Entities/Person.cs
+    public abstract class Person : Entity
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public IContactInfo Contact { get; set; }
-        public string? ProfilePhotoUrl { get; private set; }
+        private string _name;
+        private ContactInfo _contact;
+        private string? _profilePhotoUrl;
+
+        public string Name => _name;
+        public ContactInfo Contact => _contact;
+        public string? ProfilePhotoUrl => _profilePhotoUrl;
 
         /// <summary>
-        /// 
+        /// связь с Identity (ASP.NET Core Identity)
         /// </summary>
-        /// <param name="id"> уникальный идентификатор </param>
-        /// <param name="name">не должно быть пустым. может не быть уникальным</param>
-        /// <param name="contact">контакты для входа в приложение</param>
-        /// <param name="profilePhotoUrl">возможность поставить аватарку. если не выбрана то будет скучная по умолчанию</param>
-        /// <exception cref="Exception"></exception>
-        public Person(string? name, IContactInfo? contact, string? profilePhotoUrl = null)
-        {
-            if(string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            if(contact == null) throw new ArgumentNullException(nameof(contact));
+        public string IdentityUserId { get; private set; }
 
-            Id = Guid.NewGuid();
-            Name = name;
-            Contact = contact;
-            ProfilePhotoUrl = profilePhotoUrl;
+        // приватный конструктор (EF Core)
+        protected Person() { }
+
+        /// <summary>
+        /// создание нового человека
+        /// </summary>
+        protected Person(string name, ContactInfo contact, string identityUserId)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Имя не может быть пустым", nameof(name));
+
+            _name = name;
+            _contact = contact ?? throw new ArgumentNullException(nameof(contact));
+
+            if (string.IsNullOrWhiteSpace(identityUserId))
+                throw new ArgumentException("IdentityUserId обязателен", nameof(identityUserId));
+            IdentityUserId = identityUserId;
+        }
+
+
+        public void UpdateName(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Имя не может быть пустым", nameof(newName));
+            _name = newName;
+        }
+
+        public void UpdateContact(ContactInfo newContact)
+        {
+            _contact = newContact ?? throw new ArgumentNullException(nameof(newContact));
+        }
+
+        public void SetProfilePhoto(string photoUrl)
+        {
+            if (string.IsNullOrWhiteSpace(photoUrl))
+                throw new ArgumentException("URL фото не может быть пустым", nameof(photoUrl));
+            _profilePhotoUrl = photoUrl;
+        }
+
+        public void RemoveProfilePhoto()
+        {
+            _profilePhotoUrl = null;
         }
     }
 }

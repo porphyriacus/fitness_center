@@ -10,7 +10,7 @@ namespace Core.Factories
 {
     public static class MembershipFactory
     {
-        public static Membership CreateFromType(Guid clientId, MembershipType type)
+        public static Membership CreateFromType(int clientId, MembershipType type)
         {
             IVisitStrategy visitStrategy = type.SessionsCount.HasValue
                 ? new LimitedVisitStrategy()
@@ -24,6 +24,7 @@ namespace Core.Factories
 
             var membership = new Membership(
                 clientId,
+                type.Id,
                 visitStrategy,
                 freezeStrategy,
                 type.ValidityDays,

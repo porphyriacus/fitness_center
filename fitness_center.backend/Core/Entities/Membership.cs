@@ -13,16 +13,15 @@ namespace Core.Entities
     ///                   связан с клиентом по Id
     /// cтратегия необьходима для реализации поведления абонементов разных типов
     /// </summary>
-    public class Membership
+    public class Membership : Entity
     {
-        public Guid Id { get; private set; }
-        public Guid ClientId { get; private set; }
+        public int ClientId { get; private set; }
+        public int MembershipTypeId { get; private set; }
 
         public DateTime? ActivatedDate { get; private set; }
         public DateTime? ExpireDate { get; private set; }
 
-
-        public int ValidityDays {  get; private set; }
+        public int ValidityDays { get; private set; }
         public int? SessionsLeft { get; private set; }
 
         public bool IsFrozen { get; private set; }
@@ -34,27 +33,23 @@ namespace Core.Entities
         private readonly IVisitStrategy _visitStrategy;
         private readonly IFreezeStrategy _freezeStrategy;
 
-        /// <summary>
-        /// вызывается фабрикой
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="visitStrategy">обработка посещения занятий</param>
-        /// <param name="freezeStrategy">обработка заморозки</param>
-        /// <param name="sessionsLeft">сколько осталось занятий, если null то безлимит</param>
         internal Membership(
-            Guid clientId,
+            int clientId,
+            int membershipTypeId, 
             IVisitStrategy visitStrategy,
             IFreezeStrategy freezeStrategy,
             int validityDays,
             int? sessionsLeft = null)
         {
-            if (clientId == Guid.Empty) throw new ArgumentNullException(nameof(clientId), "Абонемент должен быть привязан к клдиенту");
-            if (visitStrategy == null) throw new ArgumentNullException(nameof(visitStrategy), "Нужно явно указать стратегию поведения при посещении занятия");
-            if (freezeStrategy == null) throw new ArgumentNullException(nameof(freezeStrategy), "Нужно явно указать стратегию поведения при заморозке абонемента");
-            if (validityDays <= 0) throw new ArgumentException(nameof(validityDays),"Время действия абонемента должно быть положительным числом");
+            if (visitStrategy == null)
+                throw new ArgumentNullException(nameof(visitStrategy), "Нужно явно указать стратегию поведения при посещении занятия");
+            if (freezeStrategy == null)
+                throw new ArgumentNullException(nameof(freezeStrategy), "Нужно явно указать стратегию поведения при заморозке абонемента");
+            if (validityDays <= 0)
+                throw new ArgumentException("Время действия абонемента должно быть положительным числом", nameof(validityDays));
 
-            Id = Guid.NewGuid();
             ClientId = clientId;
+            MembershipTypeId = membershipTypeId; 
             SessionsLeft = sessionsLeft;
             _visitStrategy = visitStrategy;
             _freezeStrategy = freezeStrategy;
@@ -85,6 +80,7 @@ namespace Core.Entities
         /// <exception cref="MembershipFinishedException"></exception>
         public void Visit()
         {
+            UpdateInfo();
             if (IsFrozen)
                 throw new MembershipFreezeException("Для посещения занятия необходимо чтобы абонемент не был заморожен");
             if (!_visitStrategy.CanVisit(this))

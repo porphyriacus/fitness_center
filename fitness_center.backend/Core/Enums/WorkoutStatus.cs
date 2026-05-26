@@ -8,8 +8,8 @@ namespace Core.Enums
 {
     public enum WorkoutStatus
     {
-        Available = 0,
-        Closed = 1,
-        Canceled = 2
+        Available,   // тренировочка доступна
+        Canceled,    // отменена
+        Closed,      // завершена
     }
 }

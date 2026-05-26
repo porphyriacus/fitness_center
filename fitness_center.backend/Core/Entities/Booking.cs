@@ -8,32 +8,59 @@ using System.Threading.Tasks;
 
 namespace Core.Entities
 {
-    public class Booking
+    public class Booking : Entity
     {
-        public Guid Id { get; private set; }
-        public Guid ClientId { get; private set; }
-        public Guid WorkoutId { get; private set; }
+        public int ClientId { get; private set; }
+        public int WorkoutId { get; private set; }
         public BookingStatus Status { get; private set; }
+        public DateTime BookedAt { get; private set; }
+        public DateTime? CancelledAt { get; private set; }
 
 
-        public Booking(Guid clientId, Guid workoutId)
+        public bool IsActive => Status == BookingStatus.Active;
+
+        private Booking() { } // для EF Core
+
+        public Booking(int clientId, int workoutId)
         {
-            Id = Guid.NewGuid();
+            if (clientId <= 0)
+                throw new ArgumentException("ID клиента обязателен", nameof(clientId));
+            if (workoutId <= 0)
+                throw new ArgumentException("ID тренировки обязателен", nameof(workoutId));
+
             ClientId = clientId;
             WorkoutId = workoutId;
-            Status = BookingStatus.Applied;
+            Status = BookingStatus.Active;
+            BookedAt = DateTime.UtcNow;
         }
+
         public void Cancel()
         {
-            if (Status == BookingStatus.Canceled)
+            if (Status == BookingStatus.Cancelled)
                 return;
-            Status = BookingStatus.Canceled;
+
+            if (Status == BookingStatus.Completed)
+                throw new WorkoutException("Нельзя отменить уже проведённую тренировку");
+
+            Status = BookingStatus.Cancelled;
+            CancelledAt = DateTime.UtcNow;
         }
-        public void ClientDidNotCome()
+
+        public void MarkAsCompleted()
         {
-            if (Status != BookingStatus.Applied)
-                throw new WorkoutException("Только подтверждённую запись можно отметить как неявку");
+            if (Status != BookingStatus.Active)
+                throw new WorkoutException("Только активную запись можно отметить как посещённую");
+
+            Status = BookingStatus.Completed;
+        }
+
+        public void MarkAsNotCome()
+        {
+            if (Status != BookingStatus.Active)
+                throw new WorkoutException("Только активную запись можно отметить как неявку");
+
             Status = BookingStatus.NotCome;
         }
     }
+
 }
