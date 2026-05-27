@@ -20,12 +20,14 @@ namespace Core.Entities
 
         public Trainer(
             string name,
+            string surname,
             ContactInfo contact,
             string identityUserId,
+            string? profilePhotoUrl,
             string specialization,
             string? description = null,
             int experienceYears = 0)
-            : base(name, contact, identityUserId)
+            : base(name, surname, contact, identityUserId, profilePhotoUrl)
         {
             if (string.IsNullOrWhiteSpace(specialization))
                 throw new ArgumentException("Специализация не может быть пустой", nameof(specialization));

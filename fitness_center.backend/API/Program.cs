@@ -1,6 +1,7 @@
+using Application;
 using Core.Abstractions;
-using Infrastructure.Data;
 using Infrastructure;
+using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 builder.Services
-    .AddInfrastructure();
+    .AddInfrastructure()
+    .AddApplication();
 
 
 builder.Services.AddControllers();  

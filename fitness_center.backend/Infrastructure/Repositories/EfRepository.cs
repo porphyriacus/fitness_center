@@ -42,30 +42,30 @@ namespace Infrastructure.Repositories
         {
             return await _entities.ToListAsync(cancellationToken);
         }
-
-
         public async Task<IReadOnlyList<T>> ListAsync(
-         Expression<Func<T, bool>> filter,
-         CancellationToken cancellationToken = default,
-         params Expression<Func<T, object>>[]? includesProperties)
+            Expression<Func<T, bool>>? filter,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
+            CancellationToken cancellationToken = default,
+            params Expression<Func<T, object>>[]? includesProperties)
         {
             IQueryable<T> query = _entities.AsQueryable();
 
-            if(filter != null)
-            {
+            if (filter != null)
                 query = query.Where(filter);
-            }
+
             if (includesProperties.Any())
             {
-                foreach(Expression<Func<T, object>>? included in includesProperties)
-                {
-                    query = query.Include(included);
-                }
+                foreach (var include in includesProperties)
+                    query = query.Include(include);
             }
+
+            if (orderBy != null)
+                query = orderBy(query);
+            else
+                query = query.OrderBy(e => e.Id);
 
             return await query.ToListAsync(cancellationToken);
         }
-
         public async Task<T?> FirstOrDefaultAsync(
          Expression<Func<T, bool>> filter,
          CancellationToken cancellationToken = default)

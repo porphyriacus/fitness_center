@@ -15,10 +15,12 @@ namespace Core.Entities
     public abstract class Person : Entity
     {
         private string _name;
+        private string _surname;
         private ContactInfo _contact;
         private string? _profilePhotoUrl;
 
         public string Name => _name;
+        public string Surname => _surname;
         public ContactInfo Contact => _contact;
         public string? ProfilePhotoUrl => _profilePhotoUrl;
 
@@ -33,17 +35,21 @@ namespace Core.Entities
         /// <summary>
         /// создание нового человека
         /// </summary>
-        protected Person(string name, ContactInfo contact, string identityUserId)
+        protected Person(string name, string surname, ContactInfo contact, string identityUserId, string? profilePhotoUrl)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Имя не может быть пустым", nameof(name));
-
+            if (string.IsNullOrWhiteSpace(surname))
+                throw new ArgumentException("Фамилия не может быть пуста", nameof(surname));
+            _surname = surname;
             _name = name;
             _contact = contact ?? throw new ArgumentNullException(nameof(contact));
 
             if (string.IsNullOrWhiteSpace(identityUserId))
                 throw new ArgumentException("IdentityUserId обязателен", nameof(identityUserId));
             IdentityUserId = identityUserId;
+
+            _profilePhotoUrl = profilePhotoUrl ?? default;
         }
 
 
@@ -52,6 +58,13 @@ namespace Core.Entities
             if (string.IsNullOrWhiteSpace(newName))
                 throw new ArgumentException("Имя не может быть пустым", nameof(newName));
             _name = newName;
+        }
+
+        public void UpdateSurname(string newsurname)
+        {
+            if (string.IsNullOrWhiteSpace(newsurname))
+                throw new ArgumentException("Имя не может быть пустым", nameof(newsurname));
+            _surname = newsurname;
         }
 
         public void UpdateContact(ContactInfo newContact)

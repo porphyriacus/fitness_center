@@ -12,6 +12,8 @@ namespace Core.Entities
         private ICollection<Booking> _bookings = new List<Booking>();
         private Membership? _membership;
 
+        public DateTime RegisteredAt { get; private set; }
+
         public ICollection<Booking> Bookings
         {
             get => _bookings;
@@ -24,12 +26,10 @@ namespace Core.Entities
             private set => _membership = value;
         }
 
-        public DateTime RegisteredAt { get; private set; }
-
         private Client() { }
 
-        public Client(string name, ContactInfo contact, string identityUserId)
-            : base(name, contact, identityUserId)
+        public Client(string name, string surname, ContactInfo contact, string identityUserId, string? profilePhotoUrl)
+            : base(name, surname, contact, identityUserId, profilePhotoUrl)
         {
             RegisteredAt = DateTime.UtcNow;
         }

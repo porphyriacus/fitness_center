@@ -38,9 +38,10 @@ namespace Core.Abstractions
         /// <param name="includesProperties">Делегаты для подключения навигационных свойств</param>
         /// <returns></returns>
         Task<IReadOnlyList<T>> ListAsync(
-         Expression<Func<T, bool>> filter,
-         CancellationToken cancellationToken = default,
-         params Expression<Func<T, object>>[]? includesProperties);
+         Expression<Func<T, bool>>? filter,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
+            CancellationToken cancellationToken = default,
+            params Expression<Func<T, object>>[]? includesProperties);
 
         /// </summary>
         /// Добавление новой сущности
