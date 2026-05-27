@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Application.Common.Behaviors.Errors;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Common.Behaviors.Errors
+namespace Application.Common.Models
 {
     public class Result<T> : Result
     {

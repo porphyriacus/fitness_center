@@ -12,8 +12,8 @@ namespace Application.Features.Clients.Errors
         public static readonly Error NotFound =
             Error.NotFound("Client.NotFound", "Клиент не найден");
 
-        public static readonly Error DuplicateEmail =
-            Error.Conflict("Client.DuplicateEmail", "Клиент с таким email уже существует");
+        public static readonly Error DuplicateContact =
+            Error.Conflict("Client.DuplicateContact", "Клиент с таким контактом уже существует");
 
         public static readonly Error InvalidName =
             Error.Validation("Client.InvalidName", "Имя не может быть пустым");

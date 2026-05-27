@@ -18,11 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Models\" />
     <Folder Include="Common\Mappings\" />
-    <Folder Include="Features\Clients\Commands\" />
-    <Folder Include="Features\Clients\DTOs\" />
-    <Folder Include="Features\Clients\Queries\" />
   </ItemGroup>
 
 </Project>
