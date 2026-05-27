@@ -1,0 +1,53 @@
+﻿using Application.Common.Models;
+using Application.Features.Clients.DTOs;
+using AutoMapper;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Features.Clients.Queries.GetClientsList
+{
+    public class GetClientsListQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        : IRequestHandler<GetClientsListQuery, Result<IReadOnlyList<ClientDto>>>
+    {
+        public async Task<Result<IReadOnlyList<ClientDto>>> Handle(GetClientsListQuery request, CancellationToken cancellationToken)
+        {
+            Expression<Func<Client, bool>>? filter = null;
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.ToLower();
+                filter = c => c.Name.ToLower().Contains(term) ||
+                              c.Surname.ToLower().Contains(term) ||
+                              c.Contact.GetContact().ToLower().Contains(term);
+            }
+
+            Func<IQueryable<Client>, IOrderedQueryable<Client>>? orderBy = null;
+            if (!string.IsNullOrWhiteSpace(request.SortBy))
+            {
+                orderBy = request.SortBy.ToLower() switch
+                {
+                    "name" => request.SortDescending
+                        ? q => q.OrderByDescending(c => c.Name)
+                        : q => q.OrderBy(c => c.Name),
+                    "surname" => request.SortDescending
+                        ? q => q.OrderByDescending(c => c.Surname)
+                        : q => q.OrderBy(c => c.Surname),
+                    "registeredat" => request.SortDescending
+                        ? q => q.OrderByDescending(c => c.RegisteredAt)
+                        : q => q.OrderBy(c => c.RegisteredAt),
+                    _ => q => q.OrderBy(c => c.Id)
+                };
+            }
+
+            var clients = await unitOfWork.ClientRepository.ListAsync(filter, orderBy, cancellationToken);
+
+            var dtos = mapper.Map<List<ClientDto>>(clients);
+
+            return Result<IReadOnlyList<ClientDto>>.Ok(dtos);
+        }
+    }
+}
