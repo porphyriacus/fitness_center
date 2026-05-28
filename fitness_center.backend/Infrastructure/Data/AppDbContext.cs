@@ -29,21 +29,16 @@ namespace Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var contactInfoConverter = new ValueConverter<ContactInfo, string>(
-                v => v.Serialize(),
-                v => ContactInfo.Deserialize(v) ?? CreateDefaultContactInfo()
-            );
+
 
             modelBuilder.Entity<Client>(entity =>
             {
-                entity.Property(c => c.Contact)
-                    .HasConversion(contactInfoConverter);
+
             });
 
             modelBuilder.Entity<Trainer>(entity =>
             {
-                entity.Property(t => t.Contact)
-                    .HasConversion(contactInfoConverter);
+
             });
 
             modelBuilder.Entity<WorkoutType>(entity =>
@@ -56,9 +51,5 @@ namespace Infrastructure.Data
 
         }
 
-        private static ContactInfo CreateDefaultContactInfo()
-        {
-            throw new InvalidOperationException("Failed to deserialize ContactInfo");
-        }
     }
 }
