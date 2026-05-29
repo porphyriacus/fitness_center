@@ -14,7 +14,7 @@ namespace Application.Features.Clients.Commands.Create
             RuleFor(x => x.Name)
                 .NotNull().WithMessage("Имя не должно быть пустым");
             RuleFor(x => x.Surname)
-                .NotNull().WithMessage("Имя не должно быть пустым");
+                .NotNull().WithMessage("Фамилия не должна быть пуста");
             RuleFor(x => x.ProfilePhotoUrl)
                 .MaximumLength(500).WithMessage("URL фото не может быть длиннее 500 символов");
         }

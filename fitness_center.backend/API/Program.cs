@@ -114,7 +114,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Enter 'Bearer' followed by your JWT token. Example: \"Bearer {your_token}\""
     });
 
-    // Применяем требование безопасности ко всем операциям (новый синтаксис!)
     c.AddSecurityRequirement((document) => new OpenApiSecurityRequirement
     {
         {

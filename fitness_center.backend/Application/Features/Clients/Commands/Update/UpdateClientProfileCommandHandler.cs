@@ -1,5 +1,7 @@
 ﻿using Application.Common.Models;
+using Application.Features.Clients.DTOs;
 using Application.Features.Clients.Errors;
+using AutoMapper;
 using Core.ValueObjects;
 using MediatR;
 using System;
@@ -10,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Clients.Commands.Update
 {
-    internal class UpdateClientProfileCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateClientProfileCommand, Result>
+    internal class UpdateClientProfileCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<UpdateClientProfileCommand, Result<ClientDto>>
     {
-        public async Task<Result> Handle(UpdateClientProfileCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ClientDto>> Handle(UpdateClientProfileCommand request, CancellationToken cancellationToken)
         {
             Client client = await unitOfWork.ClientRepository.GetByIdAsync(request.Id, cancellationToken);
 
@@ -33,7 +35,7 @@ namespace Application.Features.Clients.Commands.Update
             await unitOfWork.ClientRepository.UpdateAsync(client, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
+            return mapper.Map<ClientDto>(client);
         }
     }
 }

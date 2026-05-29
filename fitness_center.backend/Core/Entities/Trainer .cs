@@ -12,7 +12,8 @@ namespace Core.Entities
         // один тренер -> много тренировок
         public ICollection<Workout> Workouts { get; private set; } = new List<Workout>();
 
-        public string Specialization { get; private set; }  // Йога, Кроссфит, Пилатес
+        public int SpecializationId { get; private set; }
+        public Specialization Specialization { get; private set; }  // Йога, Кроссфит, Пилатес
         public string? Description { get; private set; }    // Биография, достижения
         public int ExperienceYears { get; private set; }    // Опыт в годах
 
@@ -23,12 +24,12 @@ namespace Core.Entities
             string surname,
             string identityUserId,
             string? profilePhotoUrl,
-            string specialization,
+            Specialization specialization,
             string? description = null,
             int experienceYears = 0)
             : base(name, surname, identityUserId, profilePhotoUrl)
         {
-            if (string.IsNullOrWhiteSpace(specialization))
+            if (specialization == null)
                 throw new ArgumentException("Специализация не может быть пустой", nameof(specialization));
 
             Specialization = specialization;
@@ -37,9 +38,9 @@ namespace Core.Entities
         }
 
 
-        public void UpdateSpecialization(string newSpecialization)
+        public void UpdateSpecialization(Specialization newSpecialization)
         {
-            if (string.IsNullOrWhiteSpace(newSpecialization))
+            if (newSpecialization == null)
                 throw new ArgumentException("Специализация не может быть пустой", nameof(newSpecialization));
             Specialization = newSpecialization;
         }

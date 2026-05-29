@@ -21,6 +21,7 @@ namespace Infrastructure.Data
 
         public DbSet<Client> Clients { get; set; }
         public DbSet<Trainer> Trainers { get; set; }
+        public DbSet<Specialization> Specializations { get; set; }
 
         public DbSet<Booking> Bookings { get; set; }
 

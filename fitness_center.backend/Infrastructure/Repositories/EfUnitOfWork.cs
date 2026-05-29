@@ -17,6 +17,8 @@ namespace Infrastructure.Repositories
 
         private readonly Lazy<IRepository<Client>> _clientrepository;
         private readonly Lazy<IRepository<Trainer>> _trainerRepository;
+        private readonly Lazy<IRepository<Specialization>> _specializationRepository;
+
         private readonly Lazy<IRepository<Booking>> _bookingRepository;
 
         private readonly Lazy<IRepository<Membership>> _membershipRepository;
@@ -32,6 +34,8 @@ namespace Infrastructure.Repositories
                 new EfRepository<Client>(context));
             _trainerRepository = new Lazy<IRepository<Trainer>>(() =>
                 new EfRepository<Trainer>(context));
+            _specializationRepository = new Lazy<IRepository<Specialization>>(()=>
+                new EfRepository<Specialization>(context));
 
             _bookingRepository = new Lazy<IRepository<Booking>>(() =>
                 new EfRepository<Booking>(context));
@@ -51,6 +55,7 @@ namespace Infrastructure.Repositories
 
         public IRepository<Client> ClientRepository => _clientrepository.Value;
         public IRepository<Trainer> TrainerRepository => _trainerRepository.Value;
+        public IRepository<Specialization> SpecializationRepository => _specializationRepository.Value;
 
         public IRepository<Booking> BookingRepository => _bookingRepository.Value;
 
