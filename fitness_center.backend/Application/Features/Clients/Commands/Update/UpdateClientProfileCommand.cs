@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Clients.Commands.Update
 {
-    public sealed record UpdateClientProfileCommand(int Id, string Name, string Surname, string Contact, string? ProfilePhotoUrl) : IRequest<Result>;
+    public sealed record UpdateClientProfileCommand(int Id, string Name, string Surname, string? ProfilePhotoUrl) : IRequest<Result>;
 }

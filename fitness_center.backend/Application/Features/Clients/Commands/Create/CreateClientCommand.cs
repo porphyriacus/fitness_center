@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Clients.Commands.Create
 {
-    public sealed record CreateClientCommand(string Name, string Surname, string Contact, string IdentityUserId, string? ProfilePhotoUrl) 
+    public sealed record CreateClientCommand(string Name, string Surname, string IdentityUserId, string? ProfilePhotoUrl) 
         : IRequest<Result<ClientDto>>;
 }

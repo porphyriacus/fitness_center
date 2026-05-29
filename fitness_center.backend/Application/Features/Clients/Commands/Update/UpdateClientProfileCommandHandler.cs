@@ -24,16 +24,11 @@ namespace Application.Features.Clients.Commands.Update
             client.UpdateName(request.Name);
             client.UpdateSurname(request.Surname);
 
-            var contact = ContactInfo.Deserialize(request.Contact);
-            if (contact != null)
-            {
-                client.UpdateContact(contact);
-            }
+
             if (request.ProfilePhotoUrl != null)
             {
                 client.SetProfilePhoto(request.ProfilePhotoUrl);
             }
-
 
             await unitOfWork.ClientRepository.UpdateAsync(client, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);

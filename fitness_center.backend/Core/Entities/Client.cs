@@ -28,8 +28,8 @@ namespace Core.Entities
 
         private Client() { }
 
-        public Client(string name, string surname, ContactInfo contact, string identityUserId, string? profilePhotoUrl)
-            : base(name, surname, contact, identityUserId, profilePhotoUrl)
+        public Client(string name, string surname, string identityUserId, string? profilePhotoUrl)
+            : base(name, surname, identityUserId, profilePhotoUrl)
         {
             RegisteredAt = DateTime.UtcNow;
         }

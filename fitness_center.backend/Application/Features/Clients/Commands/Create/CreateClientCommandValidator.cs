@@ -15,11 +15,6 @@ namespace Application.Features.Clients.Commands.Create
                 .NotNull().WithMessage("Имя не должно быть пустым");
             RuleFor(x => x.Surname)
                 .NotNull().WithMessage("Имя не должно быть пустым");
-
-            RuleFor(x => x.Contact)
-                .NotEmpty().WithMessage("Контакт обязателен")
-                .Must(BeValidContact).WithMessage("Некорректный формат контакта (email или телефон)");
-
             RuleFor(x => x.ProfilePhotoUrl)
                 .MaximumLength(500).WithMessage("URL фото не может быть длиннее 500 символов");
         }

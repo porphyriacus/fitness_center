@@ -21,8 +21,7 @@ namespace Application.Features.Clients.Queries.GetClientsList
             {
                 var term = request.SearchTerm.ToLower();
                 filter = c => c.Name.ToLower().Contains(term) ||
-                              c.Surname.ToLower().Contains(term) ||
-                              c.Contact.GetContact().ToLower().Contains(term);
+                              c.Surname.ToLower().Contains(term);
             }
 
             Func<IQueryable<Client>, IOrderedQueryable<Client>>? orderBy = null;

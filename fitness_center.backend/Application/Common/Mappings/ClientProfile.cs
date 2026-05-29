@@ -12,10 +12,7 @@ namespace Application.Common.Mappings
     {
         public ClientProfile()
         {
-            CreateMap<Client, ClientDto>().ForMember(
-                dest => dest.Contact,
-                opt => opt.MapFrom(src => src.Contact.Serialize())
-            );  
+            CreateMap<Client, ClientDto>();
         }
     }
 }

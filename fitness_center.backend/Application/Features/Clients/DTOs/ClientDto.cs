@@ -12,7 +12,6 @@ namespace Application.Features.Clients.DTOs
         public int Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
-        public string Contact { get; set; }   // результат GetContact() (email или телефон)
         public string? ProfilePhotoUrl { get; set; }
         public DateTime RegisteredAt { get; set; }
     }

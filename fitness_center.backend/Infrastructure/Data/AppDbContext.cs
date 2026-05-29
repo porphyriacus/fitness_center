@@ -32,17 +32,8 @@ namespace Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-
-            modelBuilder.Entity<Client>(entity =>
-            {
-
-            });
-
-            modelBuilder.Entity<Trainer>(entity =>
-            {
-
-            });
+            base.OnModelCreating(modelBuilder);
+            
 
             modelBuilder.Entity<WorkoutType>(entity =>
                 entity.HasIndex(wt => wt.Name).IsUnique()

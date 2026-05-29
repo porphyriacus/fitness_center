@@ -6,19 +6,14 @@ using System.Threading.Tasks;
 
 namespace Core.ValueObjects
 {
-    public sealed record PhoneContactInfo : ContactInfo
+    public sealed class PhoneContactInfo : ContactInfo
     {
-        public string PhoneNumber { get; }
-        public override string Type => "Phone";
+        private PhoneContactInfo() { }
 
-        public PhoneContactInfo(string phoneNumber)
+        public PhoneContactInfo(string phoneNumber) : base("Phone", phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
-                throw new ArgumentException("Номер телефона не может быть пустым", nameof(phoneNumber));
-            PhoneNumber = phoneNumber;
+                throw new ArgumentException("Некорректный телефон");
         }
-
-        public override string GetContact() => PhoneNumber;
-        public override string Serialize() => $"Phone|{PhoneNumber}";
     }
 }

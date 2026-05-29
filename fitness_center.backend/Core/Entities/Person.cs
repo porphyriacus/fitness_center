@@ -16,12 +16,10 @@ namespace Core.Entities
     {
         private string _name;
         private string _surname;
-        private ContactInfo _contact;
         private string? _profilePhotoUrl;
 
         public string Name => _name;
         public string Surname => _surname;
-        public ContactInfo Contact => _contact;
         public string? ProfilePhotoUrl => _profilePhotoUrl;
 
         /// <summary>
@@ -35,7 +33,7 @@ namespace Core.Entities
         /// <summary>
         /// создание нового человека
         /// </summary>
-        protected Person(string name, string surname, ContactInfo contact, string identityUserId, string? profilePhotoUrl)
+        protected Person(string name, string surname, string identityUserId, string? profilePhotoUrl)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Имя не может быть пустым", nameof(name));
@@ -43,7 +41,6 @@ namespace Core.Entities
                 throw new ArgumentException("Фамилия не может быть пуста", nameof(surname));
             _surname = surname;
             _name = name;
-            _contact = contact ?? throw new ArgumentNullException(nameof(contact));
 
             if (string.IsNullOrWhiteSpace(identityUserId))
                 throw new ArgumentException("IdentityUserId обязателен", nameof(identityUserId));
@@ -65,11 +62,6 @@ namespace Core.Entities
             if (string.IsNullOrWhiteSpace(newsurname))
                 throw new ArgumentException("Имя не может быть пустым", nameof(newsurname));
             _surname = newsurname;
-        }
-
-        public void UpdateContact(ContactInfo newContact)
-        {
-            _contact = newContact ?? throw new ArgumentNullException(nameof(newContact));
         }
 
         public void SetProfilePhoto(string photoUrl)

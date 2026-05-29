@@ -6,20 +6,14 @@ using System.Threading.Tasks;
 
 namespace Core.ValueObjects
 {
-    public sealed record EmailContactInfo : ContactInfo
+    public sealed class EmailContactInfo : ContactInfo
     {
-        public string Email { get; }
-        public override string Type => "Email";
+        private EmailContactInfo() { }
 
-        public EmailContactInfo(string email)
+        public EmailContactInfo(string email) : base("Email", email)
         {
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
-                throw new ArgumentException("Некорректный email", nameof(email));
-            Email = email;
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+                throw new ArgumentException("Некорректный email");
         }
-
-        public override string GetContact() => Email;
-
-        public override string Serialize() => $"Email|{Email}";
     }
 }
