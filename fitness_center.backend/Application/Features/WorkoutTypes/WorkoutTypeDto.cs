@@ -15,5 +15,6 @@ namespace Application.Features.WorkoutTypes
         public int DefaultMaxCapacity { get; set; }
         public string? Color { get; set; } = null;
 
+        public int Price { get; set; }
     }
 }

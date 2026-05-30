@@ -22,9 +22,9 @@ namespace Application.Features.WorkoutTypes.Commands.Update
 
             workoutType.ChangeDescription(request.Description);
             workoutType.ChangeColor(request.Color);
+            workoutType.ChangePrice(request.Price);
 
-
-            await unitOfWork.WorkoutTypeRepository.UpdateAsync(workoutType);
+            await unitOfWork.WorkoutTypeRepository.UpdateAsync(workoutType, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return mapper.Map<WorkoutTypeDto>(workoutType);

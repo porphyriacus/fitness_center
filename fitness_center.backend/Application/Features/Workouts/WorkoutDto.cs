@@ -12,15 +12,15 @@ namespace Application.Features.Workout
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;           // из WorkoutType.Name
-        public string WorkoutTypeName { get; set; } = string.Empty;
         public int WorkoutTypeId { get; set; }
         public string TrainerName { get; set; } = string.Empty;
         public int TrainerId { get; set; }
         public DateTime StartsAt { get; set; }
         public string Status { get; set; } = string.Empty;         // "Available", "Canceled", "Closed"
-        public int MaxParticipants { get; set; }                   // из WorkoutType.DefaultMaxCapacity
+        public int DefaultMaxCapacity { get; set; }                   
         public int CurrentBookingsCount { get; set; }              // количество записавшихся
         public int AvailableSlots { get; set; }                    // свободные места
-        public bool CanBeBooked { get; set; }                      // можно ли записаться
+
+        public decimal Price { get; set; }
     }
 }

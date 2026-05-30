@@ -68,6 +68,10 @@ namespace Core.Entities
             return maxParticipants - activeBookings;
         }
 
+        public int GetCurrentBookingsCount()
+        {
+            return _bookings.Count(b => b.IsActive);
+        }
 
         public void Cancel()
         {

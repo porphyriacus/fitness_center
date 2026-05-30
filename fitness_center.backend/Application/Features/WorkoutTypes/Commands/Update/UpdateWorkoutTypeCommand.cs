@@ -14,6 +14,6 @@ namespace Application.Features.WorkoutTypes.Commands.Update
     /// <param name="Id"></param>
     /// <param name="Description"></param>
     /// <param name="Color"></param>
-    public sealed record UpdateWorkoutTypeCommand(int Id, string Description, string? Color)
+    public sealed record UpdateWorkoutTypeCommand(int Id, string Description, string? Color, decimal Price)
     : IRequest<Result<WorkoutTypeDto>>;
 }

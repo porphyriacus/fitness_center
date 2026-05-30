@@ -17,8 +17,9 @@ namespace Application.Features.WorkoutTypes.Commands.Create
                 request.Name
                 , request.Description
                 , request.DefaultDurationMinutes
-                , request.DefaultDurationMinutes
+                , request.DefaultMaxCapacity
                 , request.Color
+                , request.Price
             );
 
             await unitOfWork.WorkoutTypeRepository.AddAsync( workoutType, cancellationToken );

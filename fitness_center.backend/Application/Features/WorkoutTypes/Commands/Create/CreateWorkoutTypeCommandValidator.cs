@@ -15,6 +15,8 @@ namespace Application.Features.WorkoutTypes.Commands.Create
             RuleFor(x => x.Description)
                 .NotNull()
                 .MaximumLength(300).WithMessage("Описание не может быть длиннее 300 символов");
+            RuleFor(x => x.Price)
+                .GreaterThanOrEqualTo(0).WithMessage("Стоимость тренировки не может быть отрицательной");
         }
     }
 }

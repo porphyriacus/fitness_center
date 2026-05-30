@@ -13,8 +13,9 @@ namespace Core.Entities
         public int DefaultDurationMinutes {  get; private set; }
         public int DefaultMaxCapacity { get; private set; }
         public string? Color { get; private set; } = null;
+        public decimal Price { get; private set; }
 
-        public WorkoutType(string? name, string? description, int defaultDurationMinutes, int defaultMaxCapacity, string? color)
+        public WorkoutType(string? name, string? description, int defaultDurationMinutes, int defaultMaxCapacity, string? color, decimal price)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Название не может быть пустым", nameof(name));
@@ -22,13 +23,15 @@ namespace Core.Entities
                 throw new ArgumentException("Длительность должна быть положительной", nameof(defaultDurationMinutes));
             if (defaultMaxCapacity <= 0)
                 throw new ArgumentException("Вместимость должна быть положительной", nameof(defaultMaxCapacity));
+            if (Price < 0)
+                throw new ArgumentException("Стоимость тренировки не должна быть отрицательной", nameof(defaultMaxCapacity));
 
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Description = description;
             DefaultDurationMinutes = defaultDurationMinutes > 0 ? defaultDurationMinutes : 60;
             DefaultMaxCapacity = defaultMaxCapacity;
             Color = color;
-
+            Price = price;
         }
 
         public void ChangeDescription(string? description) {
@@ -41,6 +44,12 @@ namespace Core.Entities
             if (color == string.Empty)
                 throw new Exception("Некорректный формат цвета");
             Color = color;
+        }
+        public void ChangePrice(decimal price)
+        {
+            if (Price < 0)
+                throw new ArgumentException("Стоимость тренировки не должна быть отрицательной", nameof(defaultMaxCapacity));
+            Price = price;
         }
 
     }

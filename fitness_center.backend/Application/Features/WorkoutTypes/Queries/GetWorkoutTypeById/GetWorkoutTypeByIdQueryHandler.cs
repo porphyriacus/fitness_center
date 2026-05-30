@@ -16,7 +16,7 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypeById
     {
         public async Task<Result<WorkoutTypeDto>> Handle(GetWorkoutTypeByIdQuery request, CancellationToken cancellationToken)
         {
-            var wt = await unitOfWork.WorkoutTypeRepository.GetByIdAsync(request.id);
+            var wt = await unitOfWork.WorkoutTypeRepository.GetByIdAsync(request.id, cancellationToken);
             if (wt == null)
             {
                 return WorkoutTypeErrors.NotFound;
