@@ -10,7 +10,12 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Trainers.Queries.GetTrainerSchedule
 {
-
+    /// <summary>
+    /// TrainerId   для какого тренера вывести расписание
+    /// FromDate    начиная с какой даты
+    /// ToDate      по какую
+    /// IncludePast включать ли тренировки которые уже закончились
+    /// </summary>
     public sealed record GetTrainerScheduleQuery : IRequest<Result<IReadOnlyList<WorkoutDto>>>
     {
         public int TrainerId { get; set; }           // 
