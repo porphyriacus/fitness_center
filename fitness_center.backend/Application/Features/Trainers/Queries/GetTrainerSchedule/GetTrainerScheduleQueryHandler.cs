@@ -1,6 +1,6 @@
 ﻿using Application.Common.Models;
 using Application.Features.Trainers.Errors;
-using Application.Features.Workout;
+using Application.Features.Workouts;
 using AutoMapper;
 using Core.Entities;
 using LinqKit;

@@ -1,5 +1,5 @@
 ﻿using Application.Features.Clients.DTOs;
-using Application.Features.Workout;
+using Application.Features.Workouts;
 using AutoMapper;
 using System;
 using System.Collections.Generic;

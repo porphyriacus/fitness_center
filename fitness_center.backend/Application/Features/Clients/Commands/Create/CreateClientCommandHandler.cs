@@ -23,8 +23,8 @@ internal class CreateClientCommandHandler(IUnitOfWork unitOfWork, IMapper mapper
             request.IdentityUserId, 
             request.ProfilePhotoUrl);
 
-        await unitOfWork.ClientRepository.AddAsync(client);
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.ClientRepository.AddAsync(client, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<ClientDto>(client);
     }

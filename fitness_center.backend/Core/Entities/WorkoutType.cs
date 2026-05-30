@@ -48,7 +48,7 @@ namespace Core.Entities
         public void ChangePrice(decimal price)
         {
             if (Price < 0)
-                throw new ArgumentException("Стоимость тренировки не должна быть отрицательной", nameof(defaultMaxCapacity));
+                throw new ArgumentException("Стоимость тренировки не должна быть отрицательной", nameof(Price));
             Price = price;
         }
 

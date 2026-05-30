@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.Workout
+namespace Application.Features.Workouts
 {
     public class WorkoutDto
     {

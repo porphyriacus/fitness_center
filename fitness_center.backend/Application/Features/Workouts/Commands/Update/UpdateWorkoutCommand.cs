@@ -1,5 +1,4 @@
 ﻿using Application.Common.Models;
-using Application.Features.Workouts;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.Workouts.Commands.Create
+namespace Application.Features.Workouts.Commands.Update
 {
-    public sealed record CreateWorkoutCommand(int WorkoutTypeId, int TrainerId, DateTime StartAt)
+    public sealed record UpdateWorkoutCommand(int WorkoutId, int TrainerId, DateTime StartAt)
         : IRequest<Result<WorkoutDto>>;
 }

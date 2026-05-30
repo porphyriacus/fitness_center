@@ -48,7 +48,14 @@ namespace Core.Entities
             Trainer = newTrainer;
             TrainerId = newTrainer.Id;
         }
+        public void ChangeStartTime(DateTime startsAt)
+        {
+            // тренера можно заменить только за 24 часа
+            if (StartsAt <= DateTime.UtcNow.AddHours(24))
+                throw new WorkoutException("Нельзя перенести занятие менее чем за 24 часа");
 
+            StartsAt = startsAt;
+        }
         public bool CanBeBooked(DateTime now)
         {
             return Status == WorkoutStatus.Available

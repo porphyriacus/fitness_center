@@ -1,6 +1,6 @@
 ﻿using Application.Common.Models;
 using Application.Features.Trainers.DTOs;
-using Application.Features.Workout;
+using Application.Features.Workouts;
 using MediatR;
 using System;
 using System.Collections.Generic;

@@ -16,7 +16,7 @@ namespace Application.Features.Trainers.Commands.Update
     {
         public async Task<Result<TrainerDto>> Handle(UpdateTrainerCommand request, CancellationToken cancellationToken)
         {
-            Trainer trainer = await unitOfWork.TrainerRepository.GetByIdAsync(request.Id);
+            Trainer trainer = await unitOfWork.TrainerRepository.GetByIdAsync(request.Id, cancellationToken);
             if (trainer == null) { 
                 return TrainerErrors.NotFound;
             }
