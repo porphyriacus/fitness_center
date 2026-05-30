@@ -24,4 +24,10 @@
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Workouts\Commands\Delete\" />
+    <Folder Include="Features\Workouts\Commands\Update\" />
+    <Folder Include="Features\Workouts\Queries\" />
+  </ItemGroup>
+
 </Project>

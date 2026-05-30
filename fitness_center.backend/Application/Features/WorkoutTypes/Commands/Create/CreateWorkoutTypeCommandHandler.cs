@@ -13,6 +13,10 @@ namespace Application.Features.WorkoutTypes.Commands.Create
     {
         public async Task<Result<WorkoutTypeDto>> Handle(CreateWorkoutTypeCommand request, CancellationToken cancellationToken)
         {
+            var existing = await unitOfWork.WorkoutTypeRepository.FirstOrDefaultAsync(wt => wt.Name == request.Name, cancellationToken);
+            if (existing != null)
+                return WorkoutTypeErrors.DuplicateName;
+
             var workoutType = new WorkoutType(
                 request.Name
                 , request.Description

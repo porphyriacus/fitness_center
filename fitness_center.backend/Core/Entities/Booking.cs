@@ -11,7 +11,9 @@ namespace Core.Entities
     public class Booking : Entity
     {
         public int ClientId { get; private set; }
+        public Client Client { get; private set; } 
         public int WorkoutId { get; private set; }
+        public Workout Workout { get; private set; }
         public BookingStatus Status { get; private set; }
         public DateTime BookedAt { get; private set; }
         public DateTime? CancelledAt { get; private set; }
