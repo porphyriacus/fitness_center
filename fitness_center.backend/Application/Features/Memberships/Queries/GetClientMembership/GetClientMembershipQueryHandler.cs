@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Memberships.Queries.GetClientMembership
 {
-    internal class GetClientMembershipQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    internal class GetClientMembershipQueryHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<GetClientMembershipQuery, Result<MembershipDto>>
     {
         public async Task<Result<MembershipDto>> Handle(GetClientMembershipQuery request, CancellationToken ct)
