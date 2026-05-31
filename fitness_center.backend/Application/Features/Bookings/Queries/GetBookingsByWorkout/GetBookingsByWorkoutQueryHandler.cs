@@ -19,7 +19,10 @@ namespace Application.Features.Bookings.Queries.GetBookingsByWorkout
                 b => b.WorkoutId == request.WorkoutId && b.Status == BookingStatus.Active,
                 q => q.OrderBy(b => b.BookedAt),
                 ct,
-                b => b.Client);
+                b => b.Client,
+                b => b.Workout,                    
+                b => b.Workout.WorkoutType,      
+                b => b.Workout.Trainer);
 
             var dtos = mapper.Map<List<BookingDto>>(bookings);
             return Result<IReadOnlyList<BookingDto>>.Ok(dtos);

@@ -1,3 +1,4 @@
+using API;
 using API.Services;
 using Application;
 using Core.Abstractions;
@@ -5,6 +6,7 @@ using Infrastructure;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +20,6 @@ builder.Services.AddRazorPages();
 
 // register db 
 var connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
@@ -28,28 +29,7 @@ builder.Services
     .AddApplication();
 
 //regidter identity 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => { })
-    .AddRoles<IdentityRole>() // roles
-    .AddEntityFrameworkStores<AppDbContext>(); //store
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.Password.RequiredLength = 8;
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = false; // @ _ и тд 
-    options.Password.RequireUppercase = true;
-
-    //защита от перебора паролей
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-
-    // уникальность email
-    options.User.RequireUniqueEmail = true;
-
-});
-
+builder.Services.AddIdentity();
 
 // JWT token
 builder.Services.AddAuthentication(options =>
@@ -75,9 +55,6 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
-builder.Services.AddAuthorization();
-builder.Services.AddScoped<JwtService>();
-
 // cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -90,9 +67,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Только HTTPS
 });
 
+builder.Services.AddJWTAuthentication();
 
 builder.Services.AddControllers();  
 builder.Services.AddEndpointsApiExplorer();
+
 
 builder.Services.AddSwaggerGen(c =>
 {
