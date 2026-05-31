@@ -1,4 +1,6 @@
 ﻿using API.Extensions;
+using Application.Features.Bookings.Commands.Create;
+using Application.Features.Bookings.Queries.GetBookingsByWorkout;
 using Application.Features.Workouts.Commands.Cancel;
 using Application.Features.Workouts.Commands.Close;
 using Application.Features.Workouts.Commands.Create;
@@ -18,10 +20,11 @@ namespace API.Controllers
     public class WorkoutsController : ControllerBase
     {
         private readonly IMediator _mediator;
-
-        public WorkoutsController(IMediator mediator)
+        private readonly IAuthorizationService _authorizationService;
+        public WorkoutsController(IMediator mediator, IAuthorizationService authorizationService)
         {
             _mediator = mediator;
+            _authorizationService = authorizationService;
         }
 
 
@@ -104,6 +107,43 @@ namespace API.Controllers
         {
             var command = new CloseWorkoutCommand(id);
             var result = await _mediator.Send(command);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// забронировать тренировку
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPost("{id}/bookings")]
+        [Authorize(Roles = "Client")]
+        public async Task<IActionResult> CreateBooking(int id, [FromBody] CreateBookingCommand command)
+        {
+            if (id != command.WorkoutId)
+                return BadRequest("Id тренировки в маршруте и в теле не совпадают");
+
+            var authResult = await _authorizationService.AuthorizeAsync(
+                User
+                , command.ClientId
+                , "ClientOwnerPolicy"
+            );
+            if (!authResult.Succeeded)
+                return Forbid();
+
+            var result = await _mediator.Send(command);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// список клиентов записанных на тренировку (админ/тренер)
+        /// </summary>
+        [HttpGet("{id}/bookings")]
+        [Authorize(Roles = "Admin,Trainer")]
+        public async Task<IActionResult> GetBookingsByWorkout(int id)
+        {
+            var query = new GetBookingsByWorkoutQuery(id);
+            var result = await _mediator.Send(query);
             return result.ToActionResult();
         }
     }

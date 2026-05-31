@@ -1,11 +1,15 @@
 ﻿using API.Extensions;
+using Application.Features.Bookings.Commands.Create;
+using Application.Features.Bookings.Queries.GetBookingsByWorkout;
 using Application.Features.Memberships.Commands.AssignMembershipToClient;
 using Application.Features.Memberships.Commands.FreezeMembership;
 using Application.Features.Memberships.Commands.UnfreezeMembership;
 using Application.Features.Memberships.Queries.GetClientMembership;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -16,7 +20,7 @@ namespace API.Controllers
     public class MembershipsController : ControllerBase
     {
         private readonly IMediator _mediator;
-
+        
         public MembershipsController(IMediator mediator)
         {
             _mediator = mediator;
