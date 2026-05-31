@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace Application.Features.MembershipTypes.Commands.Update
 {
-    public sealed record UpdateWorkoutTypeCommand(
+    public sealed record UpdateMembershipTypeCommand(
         int Id,
+        string Name,
         string? Description,
-        string? Color,
         decimal Price
-    ) : IRequest<Result<WorkoutTypeDto>>;
+    ) : IRequest<Result<MembershipTypeDto>>;
 }

@@ -57,6 +57,27 @@ namespace Core.Entities
             CanFreeze = canFreeze;
             MaxFreezeDays = maxFreezeDays;
         }
+        public void UpdateName(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Название не может быть пустым", nameof(newName));
+            Name = newName;
+        }
+
+        public void UpdateDescription(string? newDescription)
+        {
+            if (newDescription?.Length > 500)
+                throw new ArgumentException("Описание не должно превышать 500 символов", nameof(newDescription));
+            Description = newDescription;
+        }
+
+        public void UpdatePrice(decimal newPrice)
+        {
+            if (newPrice < 0)
+                throw new ArgumentException("Цена не может быть отрицательной", nameof(newPrice));
+            Price = newPrice;
+        }
+
 
         public bool IsUnlimited => SessionsCount == null;
         public bool HasFreeze => CanFreeze && MaxFreezeDays.HasValue;

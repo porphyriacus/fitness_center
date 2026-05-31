@@ -10,24 +10,31 @@ using System.Threading.Tasks;
 
 namespace Application.Features.MembershipTypes.Commands.Update
 {
-    internal class UpdateWorkoutTypeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        : IRequestHandler<UpdateWorkoutTypeCommand, Result<WorkoutTypeDto>>
+    internal class UpdateMembershipTypeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        : IRequestHandler<UpdateMembershipTypeCommand, Result<MembershipTypeDto>>
     {
-        public async Task<Result<WorkoutTypeDto>> Handle(UpdateWorkoutTypeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<MembershipTypeDto>> Handle(UpdateMembershipTypeCommand request, CancellationToken ct)
         {
-            var workoutType = await unitOfWork.WorkoutTypeRepository.GetByIdAsync(request.Id, cancellationToken);
+            var membershipType = await unitOfWork.MembershipTypeRepository.GetByIdAsync(request.Id, ct);
+            if (membershipType == null)
+                return MembershipTypeErrors.NotFound;
 
-            if (workoutType == null)
-                return WorkoutTypeErrors.NotFound;
+            if (membershipType.Name != request.Name)
+            {
+                var existing = await unitOfWork.MembershipTypeRepository.FirstOrDefaultAsync(
+                    mt => mt.Name == request.Name, ct);
+                if (existing != null)
+                    return MembershipTypeErrors.DuplicateName;
+            }
 
-            workoutType.ChangeDescription(request.Description);
-            workoutType.ChangeColor(request.Color);
-            workoutType.ChangePrice(request.Price);
+            membershipType.UpdateName(request.Name);
+            membershipType.UpdateDescription(request.Description);
+            membershipType.UpdatePrice(request.Price);
 
-            await unitOfWork.WorkoutTypeRepository.UpdateAsync(workoutType, cancellationToken);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.MembershipTypeRepository.UpdateAsync(membershipType, ct);
+            await unitOfWork.SaveChangesAsync(ct);
 
-            return mapper.Map<WorkoutTypeDto>(workoutType);
+            return mapper.Map<MembershipTypeDto>(membershipType);
         }
     }
 }
