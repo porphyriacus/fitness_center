@@ -7,21 +7,27 @@ using System.Threading.Tasks;
 
 namespace Application.Features.MembershipTypes.Commands.Update
 {
-    public class UpdateWorkoutTypeCommandValidator : AbstractValidator<UpdateWorkoutTypeCommand>
+    public class UpdateMembershipTypeCommandValidator : AbstractValidator<UpdateMembershipTypeCommand>
     {
-        public UpdateWorkoutTypeCommandValidator()
+        public UpdateMembershipTypeCommandValidator()
         {
-            RuleFor(x => x.Id).GreaterThan(0);
+            RuleFor(x => x.Id)
+                .GreaterThan(0)
+                .WithMessage("Id должен быть больше 0");
+
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithMessage("Название не может быть пустым")
+                .MaximumLength(100)
+                .WithMessage("Название не может быть длиннее 100 символов");
 
             RuleFor(x => x.Description)
-                .MaximumLength(500).WithMessage("Описание не может быть длиннее 500 символов");
+                .MaximumLength(500)
+                .WithMessage("Описание не может быть длиннее 500 символов");
 
             RuleFor(x => x.Price)
-                .GreaterThanOrEqualTo(0).WithMessage("Цена не может быть отрицательной");
-
-            RuleFor(x => x.Color)
-                .Must(color => color == null || !string.IsNullOrWhiteSpace(color))
-                .WithMessage("Цвет не может быть пустой строкой");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Цена не может быть отрицательной");
         }
     }
 }
