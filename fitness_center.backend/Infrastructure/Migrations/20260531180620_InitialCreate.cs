@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialIdentityCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -57,6 +57,9 @@ namespace Infrastructure.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     RegisteredAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Surname = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfilePhotoUrl = table.Column<string>(type: "TEXT", nullable: true),
                     IdentityUserId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -84,19 +87,16 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Trainers",
+                name: "Specializations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Specialization = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    ExperienceYears = table.Column<int>(type: "INTEGER", nullable: false),
-                    IdentityUserId = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Trainers", x => x.Id);
+                    table.PrimaryKey("PK_Specializations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,7 +109,8 @@ namespace Infrastructure.Migrations
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     DefaultDurationMinutes = table.Column<int>(type: "INTEGER", nullable: false),
                     DefaultMaxCapacity = table.Column<int>(type: "INTEGER", nullable: false),
-                    Color = table.Column<string>(type: "TEXT", nullable: true)
+                    Color = table.Column<string>(type: "TEXT", nullable: true),
+                    Price = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -248,6 +249,37 @@ namespace Infrastructure.Migrations
                         principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Memberships_MembershipTypes_MembershipTypeId",
+                        column: x => x.MembershipTypeId,
+                        principalTable: "MembershipTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Trainers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SpecializationId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    ExperienceYears = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Surname = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfilePhotoUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    IdentityUserId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trainers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Trainers_Specializations_SpecializationId",
+                        column: x => x.SpecializationId,
+                        principalTable: "Specializations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -361,10 +393,20 @@ namespace Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Memberships_MembershipTypeId",
+                table: "Memberships",
+                column: "MembershipTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MembershipTypes_Name",
                 table: "MembershipTypes",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trainers_SpecializationId",
+                table: "Trainers",
+                column: "SpecializationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workouts_TrainerId",
@@ -408,9 +450,6 @@ namespace Infrastructure.Migrations
                 name: "Memberships");
 
             migrationBuilder.DropTable(
-                name: "MembershipTypes");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -423,10 +462,16 @@ namespace Infrastructure.Migrations
                 name: "Clients");
 
             migrationBuilder.DropTable(
+                name: "MembershipTypes");
+
+            migrationBuilder.DropTable(
                 name: "Trainers");
 
             migrationBuilder.DropTable(
                 name: "WorkoutTypes");
+
+            migrationBuilder.DropTable(
+                name: "Specializations");
         }
     }
 }

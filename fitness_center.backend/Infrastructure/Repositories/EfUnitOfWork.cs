@@ -21,7 +21,7 @@ namespace Infrastructure.Repositories
 
         private readonly Lazy<IRepository<Booking>> _bookingRepository;
 
-        private readonly Lazy<IRepository<Membership>> _membershipRepository;
+        private readonly Lazy<IMembershipRepository> _membershipRepository;
         private readonly Lazy<IRepository<MembershipType>> _membershipTypeRepository;
         private readonly Lazy<IRepository<Workout>> _workoutRepository;
         private readonly Lazy<IRepository<WorkoutType>> _workoutTypeRepository;
@@ -41,8 +41,8 @@ namespace Infrastructure.Repositories
                 new EfRepository<Booking>(context));
 
 
-            _membershipRepository = new Lazy<IRepository<Membership>>(() =>
-                new EfRepository<Membership>(context));
+            _membershipRepository = new Lazy<IMembershipRepository>(() 
+                => new EfMembershipRepository(context));
             _membershipTypeRepository = new Lazy<IRepository<MembershipType>>(() =>
                 new EfRepository<MembershipType>(context));
 

@@ -57,7 +57,18 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -106,6 +117,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClientId")
                         .IsUnique();
 
+                    b.HasIndex("MembershipTypeId");
+
                     b.ToTable("Memberships");
                 });
 
@@ -145,6 +158,21 @@ namespace Infrastructure.Migrations
                     b.ToTable("MembershipTypes");
                 });
 
+            modelBuilder.Entity("Core.Entities.Specialization", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Specializations");
+                });
+
             modelBuilder.Entity("Core.Entities.Trainer", b =>
                 {
                     b.Property<int>("Id")
@@ -161,11 +189,23 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Specialization")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SpecializationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Surname")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SpecializationId");
 
                     b.ToTable("Trainers");
                 });
@@ -217,6 +257,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -425,17 +468,21 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entities.Booking", b =>
                 {
-                    b.HasOne("Core.Entities.Client", null)
+                    b.HasOne("Core.Entities.Client", "Client")
                         .WithMany("Bookings")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Workout", null)
+                    b.HasOne("Core.Entities.Workout", "Workout")
                         .WithMany("Bookings")
                         .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Workout");
                 });
 
             modelBuilder.Entity("Core.Entities.Membership", b =>
@@ -445,6 +492,25 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("Core.Entities.Membership", "ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Core.Entities.MembershipType", "MembershipType")
+                        .WithMany()
+                        .HasForeignKey("MembershipTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MembershipType");
+                });
+
+            modelBuilder.Entity("Core.Entities.Trainer", b =>
+                {
+                    b.HasOne("Core.Entities.Specialization", "Specialization")
+                        .WithMany()
+                        .HasForeignKey("SpecializationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Specialization");
                 });
 
             modelBuilder.Entity("Core.Entities.Workout", b =>

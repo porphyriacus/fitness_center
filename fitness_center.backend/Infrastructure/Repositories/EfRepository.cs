@@ -25,7 +25,7 @@ namespace Infrastructure.Repositories
         {
             IQueryable<T> query = _entities.AsQueryable();
 
-            if (includesProperties.Any())
+            if (includesProperties != null && includesProperties.Any())
             {
                 foreach(Expression<Func<T,object>>? include in includesProperties)
                 {
@@ -53,7 +53,7 @@ namespace Infrastructure.Repositories
             if (filter != null)
                 query = query.Where(filter);
 
-            if (includesProperties.Any())
+            if (includesProperties != null && includesProperties.Any())
             {
                 foreach (var include in includesProperties)
                     query = query.Include(include);

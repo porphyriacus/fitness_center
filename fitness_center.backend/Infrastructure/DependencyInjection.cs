@@ -16,6 +16,7 @@ namespace Infrastructure
             this IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+            services.AddScoped<IMembershipRepository, EfMembershipRepository>();
             return services;
         }
     }
