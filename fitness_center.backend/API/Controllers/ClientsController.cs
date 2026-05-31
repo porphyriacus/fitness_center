@@ -15,18 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace API.Controllers;
-/// <summary>
-/// 
-///  GET    /api/clients          - получить всех (админ)
-///  GET    /api/clients/{id}     - получить одного (админ)
-///  
-///  POST   /api/clients          - создать
-///  PUT    /api/clients/{id}     - обновить полностью
-///  PATCH  /api/clients/{id}     - обновить частично
-///  DELETE /api/clients/{id}     - удалить
-///  GET    /api/clients/{id}/workouts - тренировки клиента
-///  
-/// </summary>
+
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -216,11 +205,7 @@ public class ClientsController : ControllerBase
         var result = await _mediator.Send(command);
         return result.ToActionResult();
     }
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+
     [HttpDelete("avatar")]
     [Authorize(Roles = "Client")]
     public async Task<IActionResult> DeleteAvatar([FromQuery] int id)

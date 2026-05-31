@@ -1,6 +1,9 @@
-﻿namespace API.Authorization.TrainersAuthorization
+﻿using Microsoft.AspNetCore.Authorization;
+
+namespace API.Authorization.TrainersAuthorization
 {
-    public class TrainerOwnerRequirement
+
+    public class TrainerOwnerRequirement : IAuthorizationRequirement
     {
     }
 }
