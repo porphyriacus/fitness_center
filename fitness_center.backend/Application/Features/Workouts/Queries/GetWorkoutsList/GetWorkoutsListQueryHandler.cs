@@ -1,65 +1,85 @@
-﻿using Application.Common.Models;
-using Application.Features.Trainers.DTOs;
-using Application.Features.Trainers.Queries.GetTrainersList;
-using AutoMapper;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
+using Microsoft.EntityFrameworkCore;  
+using AutoMapper;
+using MediatR;
+using Application.Common.Models;
+using Application.Features.Workouts;
+using Core.Abstractions;
+using Core.Entities;
 
 namespace Application.Features.Workouts.Queries.GetWorkoutsList
 {
-    internal class GetWorkoutsListQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        : IRequestHandler<GetWorkoutsListQuery, Result<IReadOnlyList<WorkoutDto>>>
+    internal class GetWorkoutsListQueryHandler : IRequestHandler<GetWorkoutsListQuery, Result<IReadOnlyList<WorkoutDto>>>
     {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public GetWorkoutsListQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
         public async Task<Result<IReadOnlyList<WorkoutDto>>> Handle(GetWorkoutsListQuery request, CancellationToken cancellationToken)
         {
-            Expression<Func<Workout, bool>>? filter = w =>
-                (String.IsNullOrEmpty(request.SearchTerm) || 
-                    (w.WorkoutType.Name.ToLower().Contains(request.SearchTerm))
-                    || (w.WorkoutType.Description.ToLower().Contains(request.SearchTerm))
-                ) &&
-                (!request.WorkoutTypeId.HasValue || w.WorkoutType.Id == request.WorkoutTypeId) &&
-                (!request.TrainerId.HasValue || w.TrainerId == request.TrainerId) &&
-                (!request.FromDate.HasValue || w.StartsAt >= request.FromDate) &&
-                (!request.ToDate.HasValue || w.StartsAt <= request.ToDate) &&
-                (!request.IncludePast || w.StartsAt >= DateTime.UtcNow);
+            var filters = new List<Expression<Func<Workout, bool>>>();
 
-            Func<IQueryable<Workout>, IOrderedQueryable<Workout>>? orderedBy = null;
-            if (!String.IsNullOrEmpty(request.SortBy))
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                orderedBy = request.SortBy.ToLower() switch
+                var term = request.SearchTerm.ToLower();
+                filters.Add(w =>
+                    w.WorkoutType.Name.ToLower().Contains(term) ||
+                    (w.WorkoutType.Description != null && w.WorkoutType.Description.ToLower().Contains(term)));
+            }
+
+            if (request.WorkoutTypeId.HasValue)
+                filters.Add(w => w.WorkoutType.Id == request.WorkoutTypeId.Value);
+
+            if (request.TrainerId.HasValue)
+                filters.Add(w => w.TrainerId == request.TrainerId.Value);
+
+            if (request.FromDate.HasValue)
+                filters.Add(w => w.StartsAt >= request.FromDate.Value);
+
+            if (request.ToDate.HasValue)
+                filters.Add(w => w.StartsAt <= request.ToDate.Value);
+
+            if (!request.IncludePast)
+                filters.Add(w => w.StartsAt >= DateTime.UtcNow);
+
+            Func<IQueryable<Workout>, IOrderedQueryable<Workout>>? orderBy = null;
+            if (!string.IsNullOrEmpty(request.SortBy))
+            {
+                orderBy = request.SortBy.ToLower() switch
                 {
                     "name" => request.SortDescending
-                        ? q => q.OrderByDescending(c => c.WorkoutType.Name)
-                        : q => q.OrderBy(c => c.WorkoutType.Name),
-                    "startsat" => request.SortDescending 
-                        ? q => q.OrderByDescending(w => w.StartsAt) 
+                        ? q => q.OrderByDescending(w => w.WorkoutType.Name)
+                        : q => q.OrderBy(w => w.WorkoutType.Name),
+                    "startsat" => request.SortDescending
+                        ? q => q.OrderByDescending(w => w.StartsAt)
                         : q => q.OrderBy(w => w.StartsAt),
                     _ => q => q.OrderBy(w => w.StartsAt)
-
                 };
             }
             else
             {
-                orderedBy = w => w.OrderBy(c => c.StartsAt);
+                orderBy = q => q.OrderBy(w => w.StartsAt);
             }
 
-            var workouts = await unitOfWork.WorkoutRepository.ListAsync(
-                filter
-                , orderedBy
-                , cancellationToken
-                , w => w.Bookings
-                , w => w.Trainer
-                , w => w.WorkoutType
+            var workouts = await _unitOfWork.WorkoutRepository.ListWithFiltersAsync(
+                filters,
+                orderBy,
+                cancellationToken,
+                w => w.Bookings,
+                w => w.Trainer,
+                w => w.WorkoutType
             );
 
-            var dtos = mapper.Map<List<WorkoutDto>>( workouts );
+            var dtos = _mapper.Map<List<WorkoutDto>>(workouts);
             return Result<IReadOnlyList<WorkoutDto>>.Ok(dtos);
         }
     }

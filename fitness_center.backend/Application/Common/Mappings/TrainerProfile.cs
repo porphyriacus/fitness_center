@@ -15,10 +15,11 @@ namespace Application.Common.Mappings
         public TrainerProfile()
         {
             CreateMap<Trainer, TrainerDto>()
-             .ForMember(
-                 dest => dest.Specialization,
-                 opt => opt.MapFrom(src => src.Specialization.Name) 
-             );
+                .ForMember(dest => dest.Specialization,
+                           opt => opt.MapFrom(
+                               src => src.Specialization != null 
+                               ? src.Specialization.Name 
+                               : string.Empty));
         }
     }
 }

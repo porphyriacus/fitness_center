@@ -1,0 +1,220 @@
+﻿@page
+@model API.Pages.Admin.TrainersModel
+@{
+    ViewData["Title"] = "Управление тренерами";
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        @if (TempData["CreateError"] != null)
+        {
+                @:$('#createModal').modal('show');
+        }
+        @if (TempData["EditError"] != null)
+        {
+                @:$('#editModal').modal('show');
+        }
+    });
+</script>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2" style="color: #2c3e3f;">Тренеры</h1>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="fas fa-plus me-2"></i>Добавить тренера
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-admin mb-0">
+                <thead>
+                    <tr><th>ID</th><th>Имя</th><th>Фамилия</th><th>Специализация</th><th>Опыт</th><th>Описание</th><th>Действия</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var trainer in Model.Trainers)
+                    {
+                        <tr>
+                            <td>@trainer.Id</td>
+                            <td>@trainer.Name</td>
+                            <td>@trainer.Surname</td>
+                            <td>@trainer.Specialization</td>
+                            <td>@trainer.ExperienceYears лет</td>
+                            <td>@(string.IsNullOrEmpty(trainer.Description) ? "—" : trainer.Description)</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick='editTrainer(@trainer.Id, "@trainer.Name", "@trainer.Surname", "@trainer.Specialization", @trainer.ExperienceYears, @Json.Serialize(trainer.Description))'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTrainer(@trainer.Id, '@trainer.Name')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка создания -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Добавить тренера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["CreateError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["CreateError"]</div>
+                    }
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" name="Surname" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="Email" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input type="password" name="Password" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Специализация</label>
+                        <select name="SpecializationId" class="form-select" required>
+                            @foreach (var spec in Model.Specializations)
+                            {
+                                <option value="@spec.Id">@spec.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Опыт (лет)</label>
+                        <input type="number" name="ExperienceYears" class="form-control" value="0" min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка редактирования -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Редактировать тренера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Update">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["EditError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["EditError"]</div>
+                    }
+                    <input type="hidden" name="Id" id="editId" />
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="Name" id="editName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" name="Surname" id="editSurname" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Специализация</label>
+                        <select name="SpecializationId" id="editSpecializationId" class="form-select" required>
+                            @foreach (var spec in Model.Specializations)
+                            {
+                                <option value="@spec.Id">@spec.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Опыт (лет)</label>
+                        <input type="number" name="ExperienceYears" id="editExperienceYears" class="form-control" min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" id="editDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Удаление тренера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Delete">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="Id" id="deleteId" />
+                    <p>Вы уверены, что хотите удалить тренера <strong id="deleteName"></strong>?</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger rounded-pill">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+        function editTrainer(id, name, surname, specializationName, experience, description) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editSurname').value = surname;
+        document.getElementById('editExperienceYears').value = experience;
+        document.getElementById('editDescription').value = description || '';
+
+        // Выбираем специализацию по названию
+        var select = document.getElementById('editSpecializationId');
+        for(var i = 0; i < select.options.length; i++) {
+            if(select.options[i].text === specializationName) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    }
+
+    function deleteTrainer(id, name) {
+        document.getElementById('deleteId').value = id;
+        document.getElementById('deleteName').innerText = name;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+</script>

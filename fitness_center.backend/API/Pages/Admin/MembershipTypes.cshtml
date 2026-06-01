@@ -1,0 +1,286 @@
+﻿@page
+@model API.Pages.Admin.MembershipTypesModel
+@{
+    ViewData["Title"] = "Типы абонементов";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2" style="color: #2c3e3f;">Типы абонементов</h1>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="fas fa-plus me-2"></i>Добавить тип
+        </button>
+    </div>
+
+    <!-- Поиск -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <input type="text" name="SearchTerm" class="form-control" placeholder="Поиск..." value="@Request.Query["SearchTerm"]" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Найти</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-admin mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Описание</th>
+                        <th>Цена</th>
+                        <th>Занятий</th>
+                        <th>Срок</th>
+                        <th>Заморозка</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var type in Model.MembershipTypes)
+                    {
+                        <tr>
+                            <td>@type.Id</td>
+                            <td>@type.Name</td>
+                            <td>@(type.Description ?? "—")</td>
+                            <td>@type.Price руб.</td>
+                            <td>@(type.SessionsCount.HasValue ? type.SessionsCount.Value.ToString() : "Безлимит")</td>
+                            <td>@type.ValidityDays дней</td>
+                            <td>
+                                @if (type.CanFreeze && type.MaxFreezeDays.HasValue)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success">До @type.MaxFreezeDays дней</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Нет</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick='editMembershipType(
+                                        @type.Id,
+                                        "@type.Name",
+                                        "@(type.Description?.Replace("\"", "\\\"") ?? "")",
+                                        @type.Price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                        @(type.SessionsCount.HasValue? type.SessionsCount.Value.ToString() : "null"),
+                                        @type.ValidityDays,
+                                        @type.CanFreeze.ToString().ToLower(),
+                                        @(type.MaxFreezeDays.HasValue? type.MaxFreezeDays.Value.ToString() : "null"))'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteMembershipType(@type.Id, '@type.Name')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка создания -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Добавить тип абонемента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["CreateError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["CreateError"]</div>
+                    }
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена (руб.)</label>
+                        <input type="number" name="Price" class="form-control" value="1000" required min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Количество занятий</label>
+                        <input type="number" name="SessionsCount" id="sessionsCount" class="form-control" value="1" min="1" />
+                        <small class="text-muted">Оставьте пустым для безлимита</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Срок действия (дней)</label>
+                        <input type="number" name="ValidityDays" class="form-control" value="30" required min="1" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="CanFreeze" id="canFreeze" class="form-check-input" value="true" />
+                            <label class="form-check-label">Возможность заморозки</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="maxFreezeDaysBlock" style="display: none;">
+                        <label class="form-label">Максимум дней заморозки</label>
+                        <input type="number" name="MaxFreezeDays" class="form-control" value="14" min="1" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка редактирования -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Редактировать тип абонемента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Update">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["EditError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["EditError"]</div>
+                    }
+                    <input type="hidden" name="Id" id="editId" />
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        <input type="text" name="Name" id="editName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" id="editDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена (руб.)</label>
+                        <input type="number" name="Price" id="editPrice" class="form-control" required min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Количество занятий</label>
+                        <input type="number" name="SessionsCount" id="editSessionsCount" class="form-control" readonly style="background:#e9ecef" />
+                        <small class="text-muted">Количество занятий нельзя изменить</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Срок действия (дней)</label>
+                        <input type="number" name="ValidityDays" id="editValidityDays" class="form-control" readonly style="background:#e9ecef" />
+                        <small class="text-muted">Срок действия нельзя изменить</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="CanFreeze" id="editCanFreeze" class="form-check-input" value="true" disabled />
+                            <label class="form-check-label">Возможность заморозки</label>
+                        </div>
+                        <small class="text-muted">Заморозку нельзя изменить</small>
+                    </div>
+                    <div class="mb-3" id="editMaxFreezeDaysBlock" style="display: none;">
+                        <label class="form-label">Максимум дней заморозки</label>
+                        <input type="number" name="MaxFreezeDays" id="editMaxFreezeDays" class="form-control" readonly style="background:#e9ecef" />
+                        <small class="text-muted">Максимум заморозки нельзя изменить</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Удаление типа абонемента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Delete">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="Id" id="deleteId" />
+                    <p>Вы уверены, что хотите удалить тип абонемента <strong id="deleteName"></strong>?</p>
+                    <p class="text-danger small">Внимание! Абонементы этого типа также будут удалены.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger rounded-pill">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Показываем/скрываем поле MaxFreezeDays
+    $('#canFreeze').change(function() {
+        if ($(this).is(':checked')) {
+            $('#maxFreezeDaysBlock').show();
+        } else {
+            $('#maxFreezeDaysBlock').hide();
+        }
+    });
+
+    function editMembershipType(id, name, description, price, sessionsCount, validityDays, canFreeze, maxFreezeDays) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editDescription').value = description || '';
+        document.getElementById('editPrice').value = price;
+
+        // Обработка безлимита
+        if (sessionsCount === 'null' || sessionsCount === null || sessionsCount === 'undefined') {
+            document.getElementById('editSessionsCount').value = 'Безлимит';
+        } else {
+            document.getElementById('editSessionsCount').value = sessionsCount;
+        }
+
+        document.getElementById('editValidityDays').value = validityDays;
+        document.getElementById('editCanFreeze').checked = (canFreeze === 'true');
+
+        // Обработка заморозки
+        if (maxFreezeDays !== 'null' && maxFreezeDays !== null && maxFreezeDays !== 'undefined') {
+            document.getElementById('editMaxFreezeDays').value = maxFreezeDays;
+            $('#editMaxFreezeDaysBlock').show();
+        } else {
+            $('#editMaxFreezeDaysBlock').hide();
+        }
+
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    }
+
+    function deleteMembershipType(id, name) {
+        document.getElementById('deleteId').value = id;
+        document.getElementById('deleteName').innerText = name;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    @if (TempData["CreateError"] != null)
+    {
+        @:$('#createModal').modal('show');
+    }
+    @if (TempData["EditError"] != null)
+    {
+        @:$('#editModal').modal('show');
+    }
+</script>

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\bsuir\\fitness_center\\fitness_center.backend\\Application\\Application.csproj": {}
+    "A:\\projects\\fitness_center\\fitness_center.backend\\Application\\Application.csproj": {}
   },
   "projects": {
-    "D:\\bsuir\\fitness_center\\fitness_center.backend\\Application\\Application.csproj": {
+    "A:\\projects\\fitness_center\\fitness_center.backend\\Application\\Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Application\\Application.csproj",
+        "projectUniqueName": "A:\\projects\\fitness_center\\fitness_center.backend\\Application\\Application.csproj",
         "projectName": "Application",
-        "projectPath": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Application\\Application.csproj",
-        "packagesPath": "C:\\Users\\dasha\\.nuget\\packages\\",
-        "outputPath": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Application\\obj\\",
+        "projectPath": "A:\\projects\\fitness_center\\fitness_center.backend\\Application\\Application.csproj",
+        "packagesPath": "C:\\Users\\darya\\.nuget\\packages\\",
+        "outputPath": "A:\\projects\\fitness_center\\fitness_center.backend\\Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\dasha\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\darya\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -31,11 +31,10 @@
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\Core.csproj": {
-                "projectPath": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\Core.csproj"
+              "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\Core.csproj": {
+                "projectPath": "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\Core.csproj"
               }
             }
           }
@@ -50,16 +49,19 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "AutoMapper": {
               "target": "Package",
-              "version": "[16.1.1, )"
+              "version": "[12.0.0, )"
+            },
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.0, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -76,6 +78,10 @@
             "MediatR": {
               "target": "Package",
               "version": "[12.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.0, )"
             }
           },
           "imports": [
@@ -94,24 +100,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\Core.csproj": {
+    "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\Core.csproj",
+        "projectUniqueName": "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\Core.csproj",
-        "packagesPath": "C:\\Users\\dasha\\.nuget\\packages\\",
-        "outputPath": "D:\\bsuir\\fitness_center\\fitness_center.backend\\Core\\obj\\",
+        "projectPath": "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\Core.csproj",
+        "packagesPath": "C:\\Users\\darya\\.nuget\\packages\\",
+        "outputPath": "A:\\projects\\fitness_center\\fitness_center.backend\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\dasha\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\darya\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -125,7 +131,6 @@
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -140,11 +145,10 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "imports": [
             "net461",
@@ -162,7 +166,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

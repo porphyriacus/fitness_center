@@ -20,6 +20,7 @@ namespace Application.Features.Clients.Queries.GetClientById
             {
                 return ClientErrors.NotFound;
             }
+            Console.WriteLine($"Fresh client from DB: Id={client.Id}, Name={client.Name}, Surname={client.Surname}");
             return mapper.Map<ClientDto>(client);
         }
     }

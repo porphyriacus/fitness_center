@@ -42,7 +42,11 @@ namespace Core.Abstractions
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[]? includesProperties);
-
+        Task<IReadOnlyList<T>> ListWithFiltersAsync(
+    List<Expression<Func<T, bool>>>? filters,
+    Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
+    CancellationToken cancellationToken = default,
+    params Expression<Func<T, object>>[]? includesProperties);
         /// </summary>
         /// Добавление новой сущности
         /// </summary>
@@ -80,6 +84,7 @@ namespace Core.Abstractions
         Task<T?> FirstOrDefaultAsync(
          Expression<Func<T, bool>> filter,
          CancellationToken cancellationToken = default);
+
 
     }
 }

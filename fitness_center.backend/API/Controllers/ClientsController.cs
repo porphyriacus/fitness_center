@@ -165,7 +165,7 @@ public class ClientsController : ControllerBase
         return result.ToActionResult();
     }
 
-
+    //
     [HttpPost("profile")]
     [Authorize(Roles = "Client")]
     public async Task<IActionResult> CreateProfile([FromBody] CreateClientCommand command)

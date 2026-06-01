@@ -1,0 +1,192 @@
+﻿@page
+@model API.Pages.MembershipTypes.IndexModel
+@{
+    ViewData["Title"] = "Абонементы";
+}
+
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold" style="color: #2c3e3f;">Абонементы</h1>
+        <p class="lead text-muted">Выберите подходящий вариант</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var type in Model.MembershipTypes)
+        {
+            <div class="col">
+                <div class="membership-card">
+                    <div class="card-header-custom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2 class="membership-title">@type.Name</h2>
+                            <div class="sessions-badge">
+                                @if (type.SessionsCount.HasValue)
+                                {
+                                    <span class="sessions-count">@type.SessionsCount.Value</span>
+                                    <span class="sessions-text">занятий</span>
+                                }
+                                else
+                                {
+                                    <span class="sessions-count">∞</span>
+                                    <span class="sessions-text">безлимит</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body-custom">
+                        @if (!string.IsNullOrEmpty(type.Description))
+                        {
+                            <p class="membership-description">@type.Description</p>
+                        }
+
+                        <div class="info-row">
+                            <span class="info-label">Срок действия</span>
+                            <span class="info-value">@type.ValidityDays дней</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Заморозка</span>
+                            @if (type.CanFreeze && type.MaxFreezeDays.HasValue)
+                            {
+                                <span class="freeze-badge yes">до @type.MaxFreezeDays.Value дней</span>
+                            }
+                            else
+                            {
+                                <span class="freeze-badge no">нет заморозки</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card-footer-custom">
+                        <div class="price-wrapper">
+                            <span class="price-value">@type.Price</span>
+                            <span class="price-currency">руб.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .membership-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-left: 4px solid #67a69b;
+    }
+
+    .card-header-custom {
+        padding: 24px 24px 16px 24px;
+        background: white;
+    }
+
+    .membership-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #2c3e3f;
+        margin: 0;
+    }
+
+    .sessions-badge {
+        text-align: right;
+        line-height: 1.2;
+    }
+
+    .sessions-count {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #67a69b;
+        display: block;
+        line-height: 1;
+    }
+
+    .sessions-text {
+        font-size: 0.75rem;
+        color: #6c7a7b;
+        font-weight: 500;
+    }
+
+    .card-body-custom {
+        padding: 0 24px;
+        flex: 1;
+    }
+
+    .membership-description {
+        font-size: 0.85rem;
+        color: #6c7a7b;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2f1;
+    }
+
+        .info-row:last-of-type {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: #6c7a7b;
+        font-weight: 500;
+    }
+
+    .info-value {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #2c3e3f;
+    }
+
+    .freeze-badge {
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+        .freeze-badge.yes {
+            background: #eef5f3;
+            color: #67a69b;
+        }
+
+        .freeze-badge.no {
+            background: #f0f2f1;
+            color: #9aa8a9;
+        }
+
+    .card-footer-custom {
+        padding: 20px 24px;
+        background: #fafcfb;
+        margin-top: 16px;
+        border-top: 1px solid #eef2f1;
+    }
+
+    .price-wrapper {
+        text-align: center;
+    }
+
+    .price-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #67a69b;
+        line-height: 1;
+    }
+
+    .price-currency {
+        font-size: 0.9rem;
+        color: #6c7a7b;
+        margin-left: 4px;
+        font-weight: 500;
+    }
+</style>

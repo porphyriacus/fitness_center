@@ -1,6 +1,7 @@
 ﻿using Application.Common.Models;
 using Application.Features.Trainers.Commands.Delete;
 using Application.Features.Trainers.Errors;
+using Core.Abstractions;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,16 @@ namespace Application.Features.WorkoutTypes.Commands.Delete
             {
                 return WorkoutTypeErrors.NotFound;
             }
+            var workouts = await unitOfWork.WorkoutRepository.ListAsync(
+               w => w.WorkoutType.Id == request.id,
+               null,
+               cancellationToken
+           );
 
+            foreach (var workout in workouts)
+            {
+                await unitOfWork.WorkoutRepository.DeleteAsync(workout, cancellationToken);
+            }
             await unitOfWork.WorkoutTypeRepository.DeleteAsync(workoutType, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 

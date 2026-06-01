@@ -20,30 +20,30 @@ namespace Application.Features.MembershipTypes.Queries.GetMembershipTypesList
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
                 var search = request.SearchTerm.ToLower();
-                filter = mt => mt.Name.ToLower().Contains(search);
+                filter = mt => mt.Name.ToLower().Contains(search) || mt.Description.ToLower().Contains(search);
             }
 
             Func<IQueryable<MembershipType>, IOrderedQueryable<MembershipType>>? orderBy = null;
 
-            if (!string.IsNullOrEmpty(request.SortBy))
-            {
-                orderBy = request.SortBy.ToLower() switch
-                {
-                    "name" => request.SortDescending
-                        ? q => q.OrderByDescending(mt => mt.Name)
-                        : q => q.OrderBy(mt => mt.Name),
-                    "price" => request.SortDescending
-                        ? q => q.OrderByDescending(mt => mt.Price)
-                        : q => q.OrderBy(mt => mt.Price),
-                    "validitydays" => request.SortDescending
-                        ? q => q.OrderByDescending(mt => mt.ValidityDays)
-                        : q => q.OrderBy(mt => mt.ValidityDays),
-                    _ => q => q.OrderBy(mt => mt.Id)
-                };
-            }
 
             var types = await unitOfWork.MembershipTypeRepository.ListAsync(filter, orderBy, cancellationToken);
-            var dtos = mapper.Map<List<MembershipTypeDto>>(types);
+
+            var sorted = (request.SortBy?.ToLower()) switch
+            {
+                "price" => request.SortDescending
+                    ? types.OrderByDescending(mt => mt.Price)
+                    : types.OrderBy(mt => mt.Price),
+                "validitydays" => request.SortDescending
+                    ? types.OrderByDescending(mt => mt.ValidityDays)
+                    : types.OrderBy(mt => mt.ValidityDays),
+                "sessionscount" => request.SortDescending
+                    ? types.OrderByDescending(mt => mt.SessionsCount)
+                    : types.OrderBy(mt => mt.SessionsCount),
+                _ => request.SortDescending
+                    ? types.OrderByDescending(mt => mt.Id)
+                    : types.OrderBy(mt => mt.Id)
+            };
+            var dtos = mapper.Map<List<MembershipTypeDto>>(sorted);
 
             return Result<IReadOnlyList<MembershipTypeDto>>.Ok(dtos);
         }

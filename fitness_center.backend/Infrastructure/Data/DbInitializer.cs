@@ -51,35 +51,45 @@ namespace Infrastructure.Data
                 }
             }
         }
-        public static async Task InitializeAsync(this IServiceProvider serviceProvider)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            string[] role = { "Admin", "Client", "Trainer" };
-            foreach (var roleItem in role) {
-                if (!await roleManager.RoleExistsAsync(roleItem)) { 
-                    await roleManager.CreateAsync(new IdentityRole(roleItem));
-                }
+            string[] roles = { "Admin", "Client", "Trainer" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
             }
 
             var adminEmail = "admin@fitness.com";
-            if(await userManager.FindByEmailAsync(adminEmail) == null)
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
             {
-                var adminUser = new IdentityUser
+                adminUser = new IdentityUser
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = false 
+                    EmailConfirmed = true
                 };
-
                 var result = await userManager.CreateAsync(adminUser, "Admin123!");
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
+                    Console.WriteLine("Admin created and role assigned!");
                 }
-
+                else
+                {
+                    foreach (var error in result.Errors)
+                        Console.WriteLine($"Error: {error.Description}");
+                }
+            }
+            else
+            {
+                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
             }
         }
     }

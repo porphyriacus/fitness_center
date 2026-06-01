@@ -10,18 +10,19 @@ using System.Threading.Tasks;
 namespace Application.Features.Memberships.Queries.GetClientMembership
 {
     internal class GetClientMembershipQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetClientMembershipQuery, Result<MembershipDto>>
+    : IRequestHandler<GetClientMembershipQuery, Result<MembershipDto?>>
     {
-        public async Task<Result<MembershipDto>> Handle(GetClientMembershipQuery request, CancellationToken ct)
+        public async Task<Result<MembershipDto?>> Handle(GetClientMembershipQuery request, CancellationToken ct)
         {
             var membership = await unitOfWork.MembershipRepository.FirstOrDefaultAsync(
                 m => m.ClientId == request.ClientId && !m.IsFinished, ct);
 
             if (membership == null)
-                return MembershipErrors.NotFound;
+                return Result<MembershipDto?>.Ok(null);
 
             var membershipType = await unitOfWork.MembershipTypeRepository.GetByIdAsync(membership.MembershipTypeId, ct);
 
+            
             var dto = new MembershipDto
             {
                 Id = membership.Id,
@@ -35,7 +36,7 @@ namespace Application.Features.Memberships.Queries.GetClientMembership
                 IsFinished = membership.IsFinished
             };
 
-            return Result<MembershipDto>.Ok(dto);
+            return Result<MembershipDto?>.Ok(dto);
         }
     }
 }

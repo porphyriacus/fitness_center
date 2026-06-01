@@ -1,0 +1,75 @@
+﻿@page
+@model API.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Админ панель";
+}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold" style="color: #2c3e3f;">Админ панель</h1>
+        <a href="/Admin/SeedData" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fas fa-database me-2"></i>Тестовые данные
+        </a>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-chalkboard-user fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Тренеры</h4>
+                    <p class="text-muted">Добавление и редактирование</p>
+                    <a href="/Admin/Trainers" class="btn btn-primary rounded-pill px-4">Управление</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-dumbbell fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Типы тренировок</h4>
+                    <p class="text-muted">Настройка видов занятий</p>
+                    <a href="/Admin/WorkoutTypes" class="btn btn-primary rounded-pill px-4">Управление</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-ticket-alt fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Типы абонементов</h4>
+                    <p class="text-muted">Цены и условия</p>
+                    <a href="/Admin/MembershipTypes" class="btn btn-primary rounded-pill px-4">Управление</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Расписание</h4>
+                    <p class="text-muted">Создание тренировок</p>
+                    <a href="/Admin/Workouts" class="btn btn-primary rounded-pill px-4">Управление</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-users fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Клиенты</h4>
+                    <p class="text-muted">Просмотр и управление</p>
+                    <a href="/Admin/Clients" class="btn btn-primary rounded-pill px-4">Управление</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-bookmark fa-3x mb-3" style="color: #67a69b;"></i>
+                    <h4>Бронирования</h4>
+                    <p class="text-muted">Все записи клиентов</p>
+                    <a href="/Admin/Bookings" class="btn btn-primary rounded-pill px-4">Просмотр</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

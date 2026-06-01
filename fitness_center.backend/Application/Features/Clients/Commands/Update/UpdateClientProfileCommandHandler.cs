@@ -33,7 +33,8 @@ namespace Application.Features.Clients.Commands.Update
             }
 
             await unitOfWork.ClientRepository.UpdateAsync(client, cancellationToken);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var saved = await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return mapper.Map<ClientDto>(client);
         }

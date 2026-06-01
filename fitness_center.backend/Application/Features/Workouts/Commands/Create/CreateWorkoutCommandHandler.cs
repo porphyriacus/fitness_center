@@ -30,7 +30,8 @@ namespace Application.Features.Workouts.Commands.Create
             );
             await unitOfWork.WorkoutRepository.AddAsync( workout , cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
-
+            var reloaded = await unitOfWork.WorkoutRepository.GetByIdAsync(workout.Id, cancellationToken,
+                w => w.WorkoutType, w => w.Trainer);
             return mapper.Map<WorkoutDto>( workout );
 
         }

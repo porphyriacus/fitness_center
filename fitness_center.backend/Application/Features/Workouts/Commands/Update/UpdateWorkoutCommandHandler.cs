@@ -15,7 +15,12 @@ namespace Application.Features.Workouts.Commands.Update
     {
         public async Task<Result<WorkoutDto>> Handle(UpdateWorkoutCommand request, CancellationToken cancellationToken)
         {
-            var workout = await unitOfWork.WorkoutRepository.GetByIdAsync(request.WorkoutId, cancellationToken);
+            var workout = await unitOfWork.WorkoutRepository.GetByIdAsync(
+                request.WorkoutId,
+                cancellationToken,
+                w => w.WorkoutType,
+                w => w.Bookings,
+                w => w.Trainer);
             if (workout == null)
                 return WorkoutErrors.NotFound;
 

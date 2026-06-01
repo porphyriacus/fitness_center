@@ -18,6 +18,7 @@ namespace Infrastructure.Repositories
         private readonly AppDbContext _context;
         private readonly DbSet<Membership> _entities;
 
+
         public EfMembershipRepository(AppDbContext context)
         {
             _context = context;
@@ -121,7 +122,37 @@ namespace Infrastructure.Repositories
 
             return membership;
         }
+        public async Task<IReadOnlyList<Membership>> ListWithFiltersAsync(
+    List<Expression<Func<Membership, bool>>>? filters,
+    Func<IQueryable<Membership>, IOrderedQueryable<Membership>>? orderBy,
+    CancellationToken cancellationToken = default,
+    params Expression<Func<Membership, object>>[]? includesProperties)
+        {
+            IQueryable<Membership> query = _entities.AsQueryable();
 
+            // Применяем все фильтры по очереди
+            if (filters != null)
+            {
+                foreach (var filter in filters)
+                {
+                    if (filter != null)
+                        query = query.Where(filter);
+                }
+            }
+
+            if (includesProperties != null && includesProperties.Any())
+            {
+                foreach (var include in includesProperties)
+                    query = query.Include(include);
+            }
+
+            if (orderBy != null)
+                query = orderBy(query);
+            else
+                query = query.OrderBy(e => e.Id);
+
+            return await query.ToListAsync(cancellationToken);
+        }
         public async Task AddAsync(
             Membership entity,
             CancellationToken cancellationToken = default)

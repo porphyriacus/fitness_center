@@ -32,32 +32,6 @@ namespace API
             });
             return services;
         }
-        public static IServiceCollection AddIdentity(this IServiceCollection services)
-        {
-
-            services.AddDefaultIdentity<IdentityUser>(options => { })
-                .AddRoles<IdentityRole>() // roles
-                .AddEntityFrameworkStores<AppDbContext>(); //store
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequiredLength = 8;
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = false; // @ _ и тд 
-                options.Password.RequireUppercase = true;
-
-                //защита от перебора паролей
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.AllowedForNewUsers = true;
-
-                // уникальность email
-                options.User.RequireUniqueEmail = true;
-
-            });
-
-            return services;
-        }
+        
     }
 }

@@ -1,0 +1,266 @@
+﻿@page
+@model API.Pages.Admin.WorkoutTypesModel
+@{
+    ViewData["Title"] = "Типы тренировок";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2" style="color: #2c3e3f;">Типы тренировок</h1>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="fas fa-plus me-2"></i>Добавить тип
+        </button>
+    </div>
+
+    <!-- Поиск -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select name="SearchField" class="form-select">
+                            <option value="Name">По названию</option>
+                            <option value="Description">По описанию</option>
+                        </select>
+                    </div>
+                    <div class="col-md-7">
+                        <input type="text" name="SearchTerm" class="form-control" placeholder="Поиск..." value="@Request.Query["SearchTerm"]" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Найти</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-admin mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Описание</th>
+                        <th>Длительность</th>
+                        <th>Вместимость</th>
+                        <th>Цена</th>
+                        <th>Цвет</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var type in Model.WorkoutTypes)
+                    {
+                        <tr>
+                            <td>@type.Id</td>
+                            <td>@type.Name</td>
+                            <td>@(type.Description ?? "—")</td>
+                            <td>@type.DefaultDurationMinutes мин</td>
+                            <td>@type.DefaultMaxCapacity мест</td>
+                            <td>@type.Price руб.</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(type.Color))
+                                {
+                                    <span style="display:inline-block; width:30px; height:30px; background-color:@type.Color; border-radius:8px; border:1px solid #ddd;"></span>
+                                    <span class="ms-2">@type.Color</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick='editWorkoutType(
+                                        @type.Id,
+                                        "@type.Name",
+                                        "@(type.Description?.Replace("\"", "\\\"") ?? "")",
+                                        @type.DefaultDurationMinutes,
+                                        @type.DefaultMaxCapacity,
+                                        @type.Price,
+                                        "@(type.Color ?? "")")'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteWorkoutType(@type.Id, '@type.Name')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка создания -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Добавить тип тренировки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["CreateError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["CreateError"]</div>
+                    }
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Длительность (минуты)</label>
+                        <input type="number" name="DefaultDurationMinutes" class="form-control" value="60" required min="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Вместимость (человек)</label>
+                        <input type="number" name="DefaultMaxCapacity" class="form-control" value="15" required min="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена (руб.)</label>
+                        <input type="number" name="Price" class="form-control" value="500" required min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цвет (HEX)</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="color" name="Color" id="createColor" class="form-control" style="width: 60px; height: 38px;" value="#67a69b" />
+                            <input type="text" name="ColorText" id="createColorText" class="form-control" placeholder="#67a69b" value="#67a69b" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка редактирования -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Редактировать тип тренировки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Update">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["EditError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["EditError"]</div>
+                    }
+                    <input type="hidden" name="Id" id="editId" />
+                    <div class="mb-3">
+                        <label class="form-label">Название</label>
+                        <input type="text" name="Name" id="editName" class="form-control" required readonly style="background:#e9ecef" />
+                        <small class="text-muted">Название нельзя изменить</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" id="editDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Длительность (минуты)</label>
+                        <input type="number" name="DefaultDurationMinutes" id="editDuration" class="form-control" required min="1" readonly style="background:#e9ecef" />
+                        <small class="text-muted">Длительность нельзя изменить</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Вместимость</label>
+                        <input type="number" name="DefaultMaxCapacity" id="editCapacity" class="form-control" required min="1" readonly style="background:#e9ecef" />
+                        <small class="text-muted">Вместимость нельзя изменить</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена (руб.)</label>
+                        <input type="number" name="Price" id="editPrice" class="form-control" required min="0" step="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цвет (HEX)</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="color" name="Color" id="editColor" class="form-control" style="width: 60px; height: 38px;" />
+                            <input type="text" name="ColorText" id="editColorText" class="form-control" placeholder="#67a69b" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Удаление типа тренировки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Delete">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="Id" id="deleteId" />
+                    <p>Вы уверены, что хотите удалить тип тренировки <strong id="deleteName"></strong>?</p>
+                    <p class="text-danger small">Внимание! Тренировки этого типа также будут удалены.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger rounded-pill">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Синхронизация color и text
+    $('#createColor').on('input', function() { $('#createColorText').val($(this).val()); });
+    $('#createColorText').on('input', function() { $('#createColor').val($(this).val()); });
+    $('#editColor').on('input', function() { $('#editColorText').val($(this).val()); });
+    $('#editColorText').on('input', function() { $('#editColor').val($(this).val()); });
+
+    function editWorkoutType(id, name, description, duration, capacity, price, color) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editDescription').value = description || '';
+        document.getElementById('editDuration').value = duration;
+        document.getElementById('editCapacity').value = capacity;
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editColor').value = color || '#67a69b';
+        document.getElementById('editColorText').value = color || '#67a69b';
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    }
+
+    function deleteWorkoutType(id, name) {
+        document.getElementById('deleteId').value = id;
+        document.getElementById('deleteName').innerText = name;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    @if (TempData["CreateError"] != null)
+    {
+        @:$('#createModal').modal('show');
+    }
+    @if (TempData["EditError"] != null)
+    {
+        @:$('#editModal').modal('show');
+    }
+</script>

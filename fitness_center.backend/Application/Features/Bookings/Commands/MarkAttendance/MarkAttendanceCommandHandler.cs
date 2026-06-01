@@ -29,7 +29,9 @@ namespace Application.Features.Bookings.Commands.MarkAttendance
                 // если есть абонемент то списываем занятие
                 if (booking.Client?.Membership != null)
                 {
-                    booking.Client.Membership.Visit();
+                    var membership = await unitOfWork.MembershipRepository
+                        .FirstOrDefaultAsync(m => m.ClientId == booking.ClientId && !m.IsFinished, ct);
+                    membership.Visit();
                 }
 
                 await unitOfWork.SaveChangesAsync(ct);

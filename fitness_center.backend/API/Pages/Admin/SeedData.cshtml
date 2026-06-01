@@ -1,0 +1,40 @@
+﻿@page
+@model API.Pages.Admin.SeedDataModel
+@{
+    ViewData["Title"] = "Тестовые данные";
+}
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4 mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-white border-0 pt-4">
+            <h2 class="h4 mb-0" style="color: #2c3e3f;">Добавление тестовых данных</h2>
+        </div>
+        <div class="card-body p-4">
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-success rounded-3">@Model.Message</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.Error))
+            {
+                <div class="alert alert-danger rounded-3">@Model.Error</div>
+            }
+
+            <p class="text-muted mb-4">Будут добавлены:</p>
+            <ul class="text-muted mb-4">
+                <li>Специализации (Йога, Кроссфит, Пилатес, Кардио, Силовые)</li>
+                <li>Типы абонементов (Базовый, Стандарт, Премиум)</li>
+                <li>Типы тренировок (Йога, Пилатес, Кроссфит, Зумба)</li>
+            </ul>
+
+            <form method="post">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 w-100 py-2">
+                    <i class="fas fa-database me-2"></i>Добавить тестовые данные
+                </button>
+            </form>
+
+            <div class="mt-3 text-center">
+                <a href="/Admin" class="text-decoration-none" style="color: #67a69b;">← Вернуться в админ панель</a>
+            </div>
+        </div>
+    </div>
+</div>

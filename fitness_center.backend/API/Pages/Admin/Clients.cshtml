@@ -1,0 +1,172 @@
+﻿@page
+@model API.Pages.Admin.ClientsModel
+@{
+    ViewData["Title"] = "Управление клиентами";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2" style="color: #2c3e3f;">Клиенты</h1>
+    </div>
+
+    <!-- Поиск -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="SearchTerm" class="form-control" placeholder="Поиск по имени или фамилии..." value="@Request.Query["SearchTerm"]" />
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Найти</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-admin mb-0">
+                <thead>
+                    <tr>
+                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Id">ID</a></th>
+                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Name">Имя</a></th>
+                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Surname">Фамилия</a></th>
+                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="RegisteredAt">Дата регистрации</a></th>
+                        <th>Фото</th>
+                        <th>Действия</th>
+                    </td>
+                </thead>
+                <tbody>
+                    @foreach (var client in Model.Clients)
+                    {
+                        <tr>
+                            <td>@client.Id</td>
+                            <td>@client.Name</td>
+                            <td>@client.Surname</td>
+                            <td>@client.RegisteredAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(client.ProfilePhotoUrl))
+                                {
+                                    <img src="@client.ProfilePhotoUrl" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;" />
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary" onclick='editClient(@client.Id, "@client.Name", "@client.Surname", "@client.ProfilePhotoUrl")'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(@client.Id, '@client.Name')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка редактирования -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Редактировать клиента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Update">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    @if (TempData["EditError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["EditError"]</div>
+                    }
+                    <input type="hidden" name="Id" id="editId" />
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" name="Name" id="editName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" name="Surname" id="editSurname" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL фото</label>
+                        <input type="text" name="ProfilePhotoUrl" id="editPhotoUrl" class="form-control" placeholder="https://..." />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Удаление клиента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="Delete">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="Id" id="deleteId" />
+                    <p>Вы уверены, что хотите удалить клиента <strong id="deleteName"></strong>?</p>
+                    <p class="text-danger small">Все записи и абонементы клиента также будут удалены.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger rounded-pill">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        @if (TempData["EditError"] != null)
+        {
+            @:$('#editModal').modal('show');
+        }
+    });
+
+    function editClient(id, name, surname, photoUrl) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editSurname').value = surname;
+        document.getElementById('editPhotoUrl').value = photoUrl || '';
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function deleteClient(id, name) {
+        document.getElementById('deleteId').value = id;
+        document.getElementById('deleteName').innerText = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    // Сортировка
+    $('.sort-link').click(function(e) {
+        e.preventDefault();
+        let sortBy = $(this).data('sort');
+        let currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('sortBy', sortBy);
+        let currentDesc = currentUrl.searchParams.get('sortDescending') === 'true';
+        currentUrl.searchParams.set('sortDescending', !currentDesc);
+        window.location.href = currentUrl.toString();
+    });
+</script>

@@ -32,7 +32,7 @@ namespace Application.Features.Trainers.Commands.Create
 
             await unitOfWork.TrainerRepository.AddAsync(trainer, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
-
+            Console.WriteLine($"Trainer created with Id: {trainer.Id}");
             return mapper.Map<TrainerDto>(trainer);
 
         }

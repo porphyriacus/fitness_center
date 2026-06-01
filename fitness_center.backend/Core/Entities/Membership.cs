@@ -18,6 +18,7 @@ namespace Core.Entities
     {
         public int ClientId { get; private set; }
         public int MembershipTypeId { get; private set; }
+        public MembershipType MembershipType { get; private set; }
 
         public DateTime? ActivatedDate { get; private set; }
         public DateTime? ExpireDate { get; private set; }
@@ -34,10 +35,10 @@ namespace Core.Entities
         private Membership() { }
 
         [NotMapped]
-        private readonly IVisitStrategy _visitStrategy;
+        private IVisitStrategy _visitStrategy;
 
         [NotMapped]
-        private readonly IFreezeStrategy _freezeStrategy;
+        private IFreezeStrategy _freezeStrategy;
         internal Membership(
             int clientId,
             int membershipTypeId, 
@@ -163,5 +164,20 @@ namespace Core.Entities
             FreezeUsed = true;
         }
 
+        public void RestoreStrategies(MembershipType type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            // Восстанавливаем стратегию посещений
+            _visitStrategy = type.SessionsCount.HasValue
+                ? new LimitedVisitStrategy()
+                : new UnlimitedVisitStrategy();
+
+            // Восстанавливаем стратегию заморозки
+            _freezeStrategy = !type.CanFreeze || type.MaxFreezeDays == null
+                ? new NoFreezeStrategy()
+                : new OneTimeFreezeStrategy(TimeSpan.FromDays(type.MaxFreezeDays.Value));
+        }
     }
 }

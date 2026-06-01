@@ -14,13 +14,9 @@ namespace Core.Entities
     // Core/Entities/Person.cs
     public abstract class Person : Entity
     {
-        private string _name;
-        private string _surname;
-        private string? _profilePhotoUrl;
-
-        public string Name => _name;
-        public string Surname => _surname;
-        public string? ProfilePhotoUrl => _profilePhotoUrl;
+        public string Name { get; private set; }
+        public string Surname { get; private set; }
+        public string? ProfilePhotoUrl { get; private set; }
 
         /// <summary>
         /// связь с Identity (ASP.NET Core Identity)
@@ -39,14 +35,14 @@ namespace Core.Entities
                 throw new ArgumentException("Имя не может быть пустым", nameof(name));
             if (string.IsNullOrWhiteSpace(surname))
                 throw new ArgumentException("Фамилия не может быть пуста", nameof(surname));
-            _surname = surname;
-            _name = name;
+            Surname = surname;
+            Name = name;
 
             if (string.IsNullOrWhiteSpace(identityUserId))
                 throw new ArgumentException("IdentityUserId обязателен", nameof(identityUserId));
             IdentityUserId = identityUserId;
 
-            _profilePhotoUrl = profilePhotoUrl ?? default;
+            ProfilePhotoUrl = profilePhotoUrl ?? default;
         }
 
 
@@ -54,26 +50,26 @@ namespace Core.Entities
         {
             if (string.IsNullOrWhiteSpace(newName))
                 throw new ArgumentException("Имя не может быть пустым", nameof(newName));
-            _name = newName;
+            Name = newName;
         }
 
         public void UpdateSurname(string newsurname)
         {
             if (string.IsNullOrWhiteSpace(newsurname))
                 throw new ArgumentException("Имя не может быть пустым", nameof(newsurname));
-            _surname = newsurname;
+            Surname = newsurname;
         }
 
         public void SetProfilePhoto(string photoUrl)
         {
             if (string.IsNullOrWhiteSpace(photoUrl))
                 throw new ArgumentException("URL фото не может быть пустым", nameof(photoUrl));
-            _profilePhotoUrl = photoUrl;
+            ProfilePhotoUrl = photoUrl;
         }
 
         public void RemoveProfilePhoto()
         {
-            _profilePhotoUrl = null;
+            ProfilePhotoUrl = null;
         }
     }
 }

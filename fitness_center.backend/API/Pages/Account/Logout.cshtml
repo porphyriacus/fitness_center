@@ -1,0 +1,11 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@functions {
+    public async Task<IActionResult> OnPost()
+    {
+        await SignInManager.SignOutAsync();
+        return RedirectToPage("/Index");
+    }
+}

@@ -50,7 +50,7 @@ namespace Application.Features.Trainers.Queries.GetTrainersList
                 };
             }
 
-            var traibers = await unitOfWork.TrainerRepository.ListAsync(filter, orderBy, cancellationToken);
+            var traibers = await unitOfWork.TrainerRepository.ListAsync(filter, orderBy, cancellationToken, includesProperties: t => t.Specialization);
             var dtos = mapper.Map<List<TrainerDto>>(traibers);
 
             return Result<IReadOnlyList<TrainerDto>>.Ok(dtos);

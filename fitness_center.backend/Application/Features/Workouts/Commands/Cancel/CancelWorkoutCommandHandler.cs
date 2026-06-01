@@ -1,6 +1,8 @@
 ﻿using Application.Common.Models;
 using Application.Features.Trainers.Commands.Delete;
 using Application.Features.Trainers.Errors;
+using Core.Abstractions;
+using Core.Enums;
 using Core.Exceptions;
 using MediatR;
 using System;
@@ -16,13 +18,23 @@ namespace Application.Features.Workouts.Commands.Cancel
     {
         public async Task<Result> Handle(CancelWorkoutCommand request, CancellationToken cancellationToken)
         {
-            Workout? workout = await unitOfWork.WorkoutRepository.GetByIdAsync(request.id, cancellationToken);
+            var workout = await unitOfWork.WorkoutRepository.GetByIdAsync(
+                request.id,
+                cancellationToken,
+                w => w.Bookings);
+
             if (workout == null)
                 return WorkoutErrors.NotFound;
 
             try
             {
                 workout.Cancel();
+
+                var activeBookings = workout.Bookings.Where(b => b.Status == BookingStatus.Active).ToList();
+                foreach (var booking in activeBookings)
+                {
+                    booking.Cancel();
+                }
             }
             catch (WorkoutException ex)
             {
@@ -35,4 +47,5 @@ namespace Application.Features.Workouts.Commands.Cancel
             return Result.Success();
         }
     }
+    
 }

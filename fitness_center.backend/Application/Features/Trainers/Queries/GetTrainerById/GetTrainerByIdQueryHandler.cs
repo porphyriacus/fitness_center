@@ -15,7 +15,7 @@ namespace Application.Features.Trainers.Queries.GetTrainerById
     {
         public async Task<Result<TrainerDto>> Handle(GetTrainerByIdQuery request, CancellationToken cancellationToken)
         {
-            var tr = await unitOfWork.TrainerRepository.GetByIdAsync(request.id, cancellationToken);
+            var tr = await unitOfWork.TrainerRepository.GetByIdAsync(request.id, cancellationToken, includesProperties: t => t.Specialization);
             if (tr == null)
             {
                 return TrainerErrors.NotFound;
