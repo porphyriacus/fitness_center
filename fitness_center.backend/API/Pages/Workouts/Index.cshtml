@@ -1,9 +1,9 @@
 ﻿@page
+@using System.Security.Claims
 @model API.Pages.Workouts.IndexModel
 @{
     ViewData["Title"] = "Расписание тренировок";
 }
-
 <div class="container py-4">
     <div class="text-center mb-4">
         <h1 class="display-5 fw-bold" style="color: #2c3e3f;">Расписание тренировок</h1>
@@ -139,10 +139,6 @@
         text-overflow: ellipsis;
     }
 
-        .calendar-workout-title i {
-            margin-right: 4px;
-        }
-
     .calendar-workout-trainer {
         font-size: 0.7rem;
         margin-top: 2px;
@@ -151,24 +147,65 @@
         text-overflow: ellipsis;
     }
 
-        .calendar-workout-trainer i {
-            margin-right: 4px;
-        }
-
     .calendar-workout-capacity {
         font-size: 0.65rem;
         margin-top: 2px;
     }
 
-        .calendar-workout-capacity i {
-            margin-right: 4px;
-        }
-
     .empty-slot {
         height: 80px;
         border-bottom: 1px solid #f0f0f0;
     }
+
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1100;
+    }
+
+    .booking-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
+
+        .booking-badge.active {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .booking-badge.completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .booking-badge.cancelled {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .booking-badge.notcome {
+            background: #fff3e0;
+            color: #ff9800;
+        }
 </style>
+
+<!-- Toast для уведомлений -->
+<div class="toast-container">
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="errorToastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="successToastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
 <!-- Модалка деталей -->
 <div class="modal fade" id="detailsModal" tabindex="-1">
@@ -186,12 +223,58 @@
     </div>
 </div>
 
+<!-- Модалка для неавторизованных -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Требуется авторизация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4 text-center">
+                <i class="fas fa-lock fa-3x mb-3 text-muted"></i>
+                <p>Для записи на тренировку необходимо войти в систему или зарегистрироваться.</p>
+                <div class="d-flex gap-3 justify-content-center mt-3">
+                    <a href="/Account/Login" class="btn btn-primary rounded-pill px-4">Войти</a>
+                    <a href="/Account/Register" class="btn btn-outline-primary rounded-pill px-4">Регистрация</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+        function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     let currentOffset = 0;
     let allWorkouts = @Html.Raw(Json.Serialize(Model.Workouts));
     let workoutTypes = @Html.Raw(Json.Serialize(Model.WorkoutTypes));
     let currentWorkout = null;
+    let currentUserId = '@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)';
+    let isAdmin = @(User.IsInRole("Admin") ? "true" : "false");
+    let isTrainer = @(User.IsInRole("Trainer") ? "true" : "false");
+    let clientBookings = @Html.Raw(Json.Serialize(Model.ClientBookings));
+
+    function showError(message) {
+        $('#errorToastMessage').text(message);
+        var toast = new bootstrap.Toast(document.getElementById('errorToast'));
+        toast.show();
+    }
+
+    function showSuccess(message) {
+        $('#successToastMessage').text(message);
+        var toast = new bootstrap.Toast(document.getElementById('successToast'));
+        toast.show();
+    }
 
     function getWeekDays(offset) {
         let now = new Date();
@@ -220,6 +303,12 @@
         let type = workoutTypes.find(t => t.id === workoutTypeId);
         return type && type.color ? type.color : '#67a69b';
     }
+
+    function getBookingStatus(workoutId) {
+        let booking = clientBookings.find(b => b.workoutId === workoutId);
+        return booking ? booking.status : null;
+    }
+
 
     function renderCalendar() {
         let days = getWeekDays(currentOffset);
@@ -271,11 +360,19 @@
         }
     }
 
-    function showWorkoutDetails(workout) {
+        function showWorkoutDetails(workout) {
         currentWorkout = workout;
         let date = new Date(workout.startsAt);
         let isPast = date < new Date();
         let color = getWorkoutTypeColor(workout.workoutTypeId);
+        let bookingStatus = getBookingStatus(workout.id);
+        let isBooked = bookingStatus !== null && bookingStatus !== 'Cancelled';
+
+        // Получаем тип тренировки для дополнительной информации
+        let workoutType = workoutTypes.find(t => t.id === workout.workoutTypeId);
+        let description = workoutType?.description || 'Описание отсутствует';
+        let duration = workoutType?.defaultDurationMinutes || 60;
+        let workoutColor = workoutType?.color || '#67a69b';
 
         $('#detailsTitle').html(`<i class="fas fa-futbol me-2" style="color:${color};"></i>${workout.name}`);
 
@@ -285,23 +382,42 @@
         else if (isPast) statusHtml = '<span class="badge bg-info">Завершена</span>';
         else statusHtml = '<span class="badge bg-success">Доступна</span>';
 
+        let bookingBadge = '';
+        if (isBooked && bookingStatus === 'Active') {
+            bookingBadge = '<div class="mt-2"><span class="booking-badge active"><i class="fas fa-check-circle me-1"></i>Вы записаны</span></div>';
+        } else if (isBooked && bookingStatus === 'Completed') {
+            bookingBadge = '<div class="mt-2"><span class="booking-badge completed"><i class="fas fa-check-double me-1"></i>Посещено</span></div>';
+        } else if (isBooked && bookingStatus === 'NotCome') {
+            bookingBadge = '<div class="mt-2"><span class="booking-badge notcome"><i class="fas fa-times-circle me-1"></i>Неявка</span></div>';
+        }
+
         let html = `<div class="mb-3">${statusHtml}</div>
             <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-calendar" style="color:${color}; width:20px;"></i> Дата:</div><div class="col-8 fw-bold">${date.toLocaleDateString('ru-RU')}</div></div>
             <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-clock" style="color:${color}; width:20px;"></i> Время:</div><div class="col-8 fw-bold">${date.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</div></div>
+            <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-hourglass-half" style="color:${color}; width:20px;"></i> Длительность:</div><div class="col-8">${duration} минут</div></div>
             <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-user" style="color:${color}; width:20px;"></i> Тренер:</div><div class="col-8">${workout.trainerName}</div></div>
+            <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-align-left" style="color:${color}; width:20px;"></i> Описание:</div><div class="col-8">${escapeHtml(description)}</div></div>
             <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-users" style="color:${color}; width:20px;"></i> Места:</div><div class="col-8">${workout.currentBookingsCount} из ${workout.defaultMaxCapacity}</div></div>
             <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-chair" style="color:${color}; width:20px;"></i> Свободно:</div><div class="col-8 fw-bold ${workout.availableSlots > 0 ? 'text-success' : 'text-danger'}">${workout.availableSlots}</div></div>
-            <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-ruble-sign" style="color:${color}; width:20px;"></i> Цена:</div><div class="col-8">${workout.price} руб.</div></div>`;
+            <div class="row mb-2"><div class="col-4 text-muted"><i class="fas fa-ruble-sign" style="color:${color}; width:20px;"></i> Цена:</div><div class="col-8">${workout.price} руб.</div></div>
+            ${bookingBadge}`;
 
         let actions = '';
-        if (!isPast && workout.status !== 'Canceled' && workout.availableSlots > 0) {
-            actions = `<button class="btn btn-primary w-100 rounded-pill" onclick="bookWorkout(${workout.id})"><i class="fas fa-calendar-plus me-2"></i>Записаться</button>`;
-        } else if (!isPast && workout.status !== 'Canceled' && workout.availableSlots <= 0) {
-            actions = `<div class="alert alert-warning mb-0">Нет свободных мест</div>`;
-        } else if (workout.status === 'Canceled') {
-            actions = `<div class="alert alert-danger mb-0">Тренировка отменена</div>`;
-        } else if (isPast) {
-            actions = `<div class="alert alert-info mb-0">Тренировка завершена</div>`;
+
+        if (currentUserId && !isAdmin && !isTrainer) {
+            if (isBooked && bookingStatus === 'Active' && !isPast && workout.status !== 'Canceled') {
+                actions = `<button class="btn btn-danger w-100 rounded-pill" onclick="cancelBooking(${workout.id})"><i class="fas fa-times me-2"></i>Отменить запись</button>`;
+            } else if (!isBooked && !isPast && workout.status !== 'Canceled' && workout.availableSlots > 0) {
+                actions = `<button class="btn btn-primary w-100 rounded-pill" onclick="bookWorkout(${workout.id})"><i class="fas fa-calendar-plus me-2"></i>Записаться</button>`;
+            } else if (!isBooked && !isPast && workout.status !== 'Canceled' && workout.availableSlots <= 0) {
+                actions = `<div class="alert alert-warning mb-0">Нет свободных мест</div>`;
+            } else if (isBooked && bookingStatus === 'Completed') {
+                actions = `<div class="alert alert-success mb-0">Вы посетили эту тренировку</div>`;
+            } else if (isBooked && bookingStatus === 'NotCome') {
+                actions = `<div class="alert alert-secondary mb-0">Вы не пришли на тренировку</div>`;
+            }
+        } else if (!currentUserId && !isPast && workout.status !== 'Canceled' && workout.availableSlots > 0) {
+            actions = `<button class="btn btn-primary w-100 rounded-pill" onclick="showLoginModal()"><i class="fas fa-calendar-plus me-2"></i>Записаться</button>`;
         }
 
         $('#detailsContent').html(html);
@@ -309,29 +425,66 @@
         new bootstrap.Modal(document.getElementById('detailsModal')).show();
     }
 
+    function showLoginModal() {
+        $('#detailsModal').modal('hide');
+        new bootstrap.Modal(document.getElementById('loginModal')).show();
+    }
     function bookWorkout(workoutId) {
-        $.get('/api/auth/my-roles', function(data) {
-            if (!data.userId) {
-                window.location.href = '/Account/Login';
-                return;
-            }
-            $.ajax({
-                url: `/api/workouts/${workoutId}/bookings`,
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ clientId: data.userId, workoutId: workoutId }),
-                success: function() {
-                    alert('Вы успешно записаны на тренировку');
+        $.ajax({
+            url: '/Workouts?handler=Book',
+            type: 'POST',
+            headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
+            data: { workoutId: workoutId },
+            success: function(response) {
+                if (response.success) {
+                    localStorage.setItem('toastMessage', response.message);
+                    localStorage.setItem('toastType', 'success');
                     location.reload();
-                },
-                error: function(xhr) {
-                    alert(xhr.responseJSON?.error || 'Ошибка записи');
                 }
-            });
+            },
+            error: function(xhr) {
+                let msg = xhr.responseJSON?.message || 'Ошибка записи';
+                showError(msg);
+            }
         });
     }
 
+    function cancelBooking(workoutId) {
+        $.ajax({
+            url: '/Workouts?handler=Cancel',
+            type: 'POST',
+            headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
+            data: { workoutId: workoutId },
+            success: function(response) {
+                if (response.success) {
+                    localStorage.setItem('toastMessage', response.message);
+                    localStorage.setItem('toastType', 'success');
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                let msg = xhr.responseJSON?.message || 'Ошибка отмены';
+                showError(msg);
+            }
+        });
+    }
+
+    // Показываем toast после перезагрузки, если есть сообщение в localStorage
+    $(document).ready(function() {
+        var message = localStorage.getItem('toastMessage');
+        var type = localStorage.getItem('toastType');
+        if (message) {
+            if (type === 'success') {
+                showSuccess(message);
+            } else {
+                showError(message);
+            }
+            localStorage.removeItem('toastMessage');
+            localStorage.removeItem('toastType');
+        }
+    });
     $('#prevWeekBtn').click(function() { currentOffset--; renderCalendar(); });
-    $('#nextWeekBtn').click(function() { if (currentOffset + 1 > 2) { alert('Только 2 недели вперед'); return; } currentOffset++; renderCalendar(); });
+    $('#nextWeekBtn').click(function() { if (currentOffset + 1 > 2) { showError('Расписание доступно только на 2 недели вперед'); return; } currentOffset++; renderCalendar(); });
     $(document).ready(function() { renderCalendar(); });
+
 </script>

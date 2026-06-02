@@ -1,21 +1,25 @@
+using Application.Features.Bookings;
+using Application.Features.Bookings.Commands.Create;
+using Application.Features.Bookings.Commands.MarkAttendance;
+using Application.Features.Bookings.Commands.MarkNoShow;
+using Application.Features.Bookings.Queries.GetBookingsByWorkout;
+using Application.Features.Clients.DTOs;
+using Application.Features.Clients.Queries.GetClientsList;
+using Application.Features.Trainers.DTOs;
+using Application.Features.Trainers.Queries.GetTrainersList;
+using Application.Features.Workouts;
+using Application.Features.Workouts.Commands.Cancel;
+using Application.Features.Workouts.Commands.Create;
+using Application.Features.Workouts.Commands.Delete;
+using Application.Features.Workouts.Commands.Update;
+using Application.Features.Workouts.Queries.GetWorkoutById;
+using Application.Features.Workouts.Queries.GetWorkoutsList;
+using Application.Features.WorkoutTypes;
+using Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using MediatR;
-using Application.Features.Workouts;
-using Application.Features.Workouts.Queries.GetWorkoutsList;
-using Application.Features.Workouts.Commands.Create;
-using Application.Features.Workouts.Commands.Update;
-using Application.Features.Workouts.Commands.Cancel;
-using Application.Features.Workouts.Commands.Delete;
-using Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList;
-using Application.Features.WorkoutTypes;
-using Application.Features.Trainers.Queries.GetTrainersList;
-using Application.Features.Trainers.DTOs;
-using Application.Features.Bookings.Queries.GetBookingsByWorkout;
-using Application.Features.Bookings.Commands.MarkAttendance;
-using Application.Features.Bookings.Commands.MarkNoShow;
-using Application.Features.Bookings;
 
 namespace API.Pages.Admin
 {
@@ -32,6 +36,7 @@ namespace API.Pages.Admin
         public List<WorkoutDto> Workouts { get; set; } = new();
         public List<WorkoutTypeDto> WorkoutTypes { get; set; } = new();
         public List<TrainerDto> Trainers { get; set; } = new();
+        public List<ClientDto> Clients { get; set; } = new();
 
         public async Task OnGetAsync()
         {
@@ -48,13 +53,24 @@ namespace API.Pages.Admin
 
             var workoutsResult = await _mediator.Send(new GetWorkoutsListQuery { IncludePast = true });
             if (workoutsResult.IsSuccess) Workouts = workoutsResult.Value.OrderBy(w => w.StartsAt).ToList();
+
+            var clientsResult = await _mediator.Send(new GetClientsListQuery());
+            if (clientsResult.IsSuccess) Clients = clientsResult.Value.ToList();
         }
 
         public async Task<IActionResult> OnPostCreateAsync(int workoutTypeId, int trainerId, DateTime startAt)
         {
-            if (startAt < DateTime.UtcNow)
+            // Проверка времени: не раньше чем через 8 часов
+            if (startAt < DateTime.UtcNow.AddHours(8))
             {
-                TempData["CreateError"] = "Нельзя создавать тренировки в прошлом";
+                TempData["CreateError"] = "Тренировку можно создать минимум за 8 часов до начала";
+                await LoadData();
+                return Page();
+            }
+
+            if (startAt.Hour < 8 || startAt.Hour >= 22)
+            {
+                TempData["CreateError"] = "Время тренировки должно быть с 8:00 до 22:00";
                 await LoadData();
                 return Page();
             }
@@ -81,9 +97,17 @@ namespace API.Pages.Admin
 
         public async Task<IActionResult> OnPostUpdateAsync(int workoutId, int trainerId, DateTime startAt)
         {
-            if (startAt < DateTime.UtcNow)
+            // Проверка времени: нельзя переносить на время раньше чем через 8 часов
+            if (startAt < DateTime.UtcNow.AddHours(8))
             {
-                TempData["EditError"] = "Нельзя переносить тренировку в прошлое";
+                TempData["EditError"] = "Нельзя переносить тренировку на время раньше чем через 8 часов";
+                await LoadData();
+                return Page();
+            }
+
+            if (startAt.Hour < 8 || startAt.Hour >= 22)
+            {
+                TempData["EditError"] = "Время тренировки должно быть с 8:00 до 22:00";
                 await LoadData();
                 return Page();
             }
@@ -128,7 +152,6 @@ namespace API.Pages.Admin
             return RedirectToPage();
         }
 
-       
         public async Task<IActionResult> OnGetBookings(int workoutId)
         {
             var query = new GetBookingsByWorkoutQuery(workoutId);
@@ -142,7 +165,6 @@ namespace API.Pages.Admin
             return new JsonResult(new { error = "Ошибка загрузки" }) { StatusCode = 500 };
         }
 
-        // Метод для отметки посещения
         public async Task<IActionResult> OnPostMarkAttendance(int bookingId)
         {
             var command = new MarkAttendanceCommand(bookingId);
@@ -156,7 +178,6 @@ namespace API.Pages.Admin
             return new JsonResult(new { error = result.Error.Message }) { StatusCode = 400 };
         }
 
-        // Метод для отметки неявки
         public async Task<IActionResult> OnPostMarkNoShow(int bookingId)
         {
             var command = new MarkNoShowCommand(bookingId);
@@ -168,6 +189,39 @@ namespace API.Pages.Admin
             }
 
             return new JsonResult(new { error = result.Error.Message }) { StatusCode = 400 };
+        }
+
+
+        public async Task<IActionResult> OnPostAddBooking(int workoutId, int clientId)
+        {
+            // Проверяем свободные места
+            var workout = await _mediator.Send(new GetWorkoutByIdQuery(workoutId));
+            if (!workout.IsSuccess)
+            {
+                return new JsonResult(new { error = "Тренировка не найдена" }) { StatusCode = 404 };
+            }
+
+            if (workout.Value.AvailableSlots <= 0)
+            {
+                return new JsonResult(new { error = "Нет свободных мест" }) { StatusCode = 409 };
+            }
+
+            var command = new CreateBookingCommand(clientId, workoutId);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return new JsonResult(new { error = result.Error.Message }) { StatusCode = 400 };
+            }
+
+            // После успешной записи получаем обновлённую тренировку
+            var updatedWorkout = await _mediator.Send(new GetWorkoutByIdQuery(workoutId));
+
+            return new JsonResult(new
+            {
+                success = true,
+                updatedWorkout = updatedWorkout.IsSuccess ? updatedWorkout.Value : null
+            });
         }
     }
 }

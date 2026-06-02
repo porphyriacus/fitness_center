@@ -16,7 +16,7 @@ namespace Application.Features.Bookings.Queries.GetBookingsByWorkout
         public async Task<Result<IReadOnlyList<BookingDto>>> Handle(GetBookingsByWorkoutQuery request, CancellationToken ct)
         {
             var bookings = await unitOfWork.BookingRepository.ListAsync(
-                b => b.WorkoutId == request.WorkoutId && b.Status == BookingStatus.Active,
+                b => b.WorkoutId == request.WorkoutId,
                 q => q.OrderBy(b => b.BookedAt),
                 ct,
                 b => b.Client,

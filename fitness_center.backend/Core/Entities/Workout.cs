@@ -71,13 +71,13 @@ namespace Core.Entities
         public int GetAvailableSlots()
         {
             var maxParticipants = WorkoutType.DefaultMaxCapacity;
-            var activeBookings = _bookings.Count(b => b.IsActive);
+            var activeBookings = _bookings.Count(b => !b.IsCanceled);
             return maxParticipants - activeBookings;
         }
 
         public int GetCurrentBookingsCount()
         {
-            return _bookings.Count(b => b.IsActive);
+            return _bookings.Count(b => !b.IsCanceled);
         }
 
         public void Cancel()

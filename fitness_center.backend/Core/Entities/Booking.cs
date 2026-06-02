@@ -20,7 +20,7 @@ namespace Core.Entities
 
 
         public bool IsActive => Status == BookingStatus.Active;
-
+        public bool IsCanceled => Status == BookingStatus.Cancelled;
         private Booking() { } // для EF Core
 
         public Booking(int clientId, int workoutId)

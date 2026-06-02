@@ -1,0 +1,615 @@
+﻿@page
+@model API.Pages.Account.Profile.IndexModel
+@{
+    ViewData["Title"] = Model.UserRole == "Trainer" ? "Профиль тренера" : "Личный кабинет";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Боковое меню -->
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-3">
+                    <div class="text-center mb-3">
+                        @if (Model.UserRole == "Trainer")
+                        {
+                            <i class="fas fa-chalkboard-user fa-4x" style="color: #6c7a7b;"></i>
+                            <h5 class="mt-2 mb-0" style="color: #2c3e3f;">@Model.Trainer?.Name @Model.Trainer?.Surname</h5>
+                            <small class="text-muted">Тренер</small>
+                            <div class="mt-1"><span class="badge" style="background-color: #eef5f3; color: #67a69b;">@Model.Trainer?.Specialization</span></div>
+                        }
+                        else
+                        {
+                            <i class="fas fa-user-circle fa-4x" style="color: #6c7a7b;"></i>
+                            <h5 class="mt-2 mb-0" style="color: #2c3e3f;">@Model.Client?.Name @Model.Client?.Surname</h5>
+                            <small class="text-muted">Клиент</small>
+                        }
+                    </div>
+                    <hr class="my-3" />
+                    <div class="nav flex-column nav-pills gap-1" id="profileTabs" role="tablist">
+                        <a class="nav-link rounded-3" data-bs-toggle="pill" href="#profile" role="tab" style="color: #6c7a7b;">
+                            <i class="fas fa-user me-2" style="color: #67a69b;"></i>Профиль
+                        </a>
+                        @if (Model.UserRole == "Client")
+                        {
+                            <a class="nav-link rounded-3" data-bs-toggle="pill" href="#membership" role="tab" style="color: #6c7a7b;">
+                                <i class="fas fa-ticket-alt me-2" style="color: #67a69b;"></i>Мой абонемент
+                            </a>
+                            <a class="nav-link rounded-3" data-bs-toggle="pill" href="#bookings" role="tab" style="color: #6c7a7b;">
+                                <i class="fas fa-calendar-check me-2" style="color: #67a69b;"></i>Текущие записи
+                            </a>
+                            <a class="nav-link rounded-3" data-bs-toggle="pill" href="#history" role="tab" style="color: #6c7a7b;">
+                                <i class="fas fa-history me-2" style="color: #67a69b;"></i>История посещений
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="nav-link rounded-3" data-bs-toggle="pill" href="#schedule" role="tab" style="color: #6c7a7b;">
+                                <i class="fas fa-calendar-alt me-2" style="color: #67a69b;"></i>Моё расписание
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контент -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Профиль -->
+                <div class="tab-pane fade" id="profile" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white border-0 pt-4">
+                            <h4 class="mb-0" style="color: #2c3e3f;">Профиль</h4>
+                            <hr style="width: 60px; margin: 8px 0 0 0; border-color: #67a69b; border-width: 2px;" />
+                        </div>
+                        <div class="card-body p-4">
+                            @if (TempData["ProfileError"] != null)
+                            {
+                                <div class="alert alert-danger">@TempData["ProfileError"]</div>
+                            }
+                            @if (TempData["ProfileSuccess"] != null)
+                            {
+                                <div class="alert alert-success">@TempData["ProfileSuccess"]</div>
+                            }
+
+                            @if (Model.UserRole == "Trainer")
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: #6c7a7b;">Имя</label>
+                                    <div class="form-control" style="background-color: #f8f9fa;">@Model.Trainer?.Name</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: #6c7a7b;">Фамилия</label>
+                                    <div class="form-control" style="background-color: #f8f9fa;">@Model.Trainer?.Surname</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: #6c7a7b;">Специализация</label>
+                                    <div class="form-control" style="background-color: #f8f9fa;">@Model.Trainer?.Specialization</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: #6c7a7b;">Опыт (лет)</label>
+                                    <div class="form-control" style="background-color: #f8f9fa;">@Model.Trainer?.ExperienceYears</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" style="color: #6c7a7b;">Описание</label>
+                                    <div class="form-control" style="background-color: #f8f9fa; min-height: 80px;">@Model.Trainer?.Description</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="UpdateProfile">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="Id" value="@Model.Client?.Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label" style="color: #6c7a7b;">Имя</label>
+                                        <input type="text" name="Name" class="form-control" value="@Model.Client?.Name" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" style="color: #6c7a7b;">Фамилия</label>
+                                        <input type="text" name="Surname" class="form-control" value="@Model.Client?.Surname" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" style="color: #6c7a7b;">Дата регистрации</label>
+                                        <div class="form-control" style="background-color: #f8f9fa;">@Model.Client?.RegisteredAt.ToString("dd.MM.yyyy")</div>
+                                    </div>
+                                    <button type="submit" class="btn rounded-pill px-4" style="background-color: #67a69b; border-color: #67a69b; color: white;">Сохранить</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.UserRole == "Client")
+                {
+                    <!-- Абонемент -->
+                    <!-- Абонемент -->
+                    <div class="tab-pane fade" id="membership" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-0 pt-4">
+                                <h4 class="mb-0" style="color: #2c3e3f;">Мой абонемент</h4>
+                                <hr style="width: 60px; margin: 8px 0 0 0; border-color: #67a69b; border-width: 2px;" />
+                            </div>
+                            <div class="card-body p-4">
+                                @if (Model.Membership == null)
+                                {
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-ticket-alt fa-3x mb-3" style="color: #67a69b;"></i>
+                                        <p class="text-muted">У вас нет активного абонемента</p>
+                                        <a href="/MembershipTypes" class="btn rounded-pill px-4" style="background-color: #67a69b; border-color: #67a69b; color: white;">Выбрать абонемент</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3" style="background: #f8f9fa;">
+                                                <div class="mb-3">
+                                                    <div class="text-muted small">Тип абонемента</div>
+                                                    <div class="fw-bold" style="color: #2c3e3f;">@Model.Membership.MembershipTypeName</div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="text-muted small">Статус</div>
+                                                    <span class="badge @(Model.Membership.StatusColor == "danger" ? "bg-danger" : (Model.Membership.StatusColor == "warning" ? "bg-warning" : (Model.Membership.StatusColor == "secondary" ? "bg-secondary" : "bg-success")))">
+                                                        @Model.Membership.StatusText
+                                                    </span>
+                                                </div>
+                                                @if (Model.Membership.ActivatedDate.HasValue)
+                                                {
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Активирован</div>
+                                                        <div style="color: #2c3e3f;">@Model.Membership.ActivatedDate.Value.ToString("dd.MM.yyyy")</div>
+                                                    </div>
+                                                }
+                                                @if (Model.Membership.ExpireDate.HasValue)
+                                                {
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Действует до</div>
+                                                        <div style="color: #2c3e3f;">@Model.Membership.ExpireDate.Value.ToString("dd.MM.yyyy")</div>
+                                                    </div>
+                                                }
+                                                @if (Model.Membership.IsFrozen && Model.Membership.FrozenUntil.HasValue)
+                                                {
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Разморозится</div>
+                                                        <div style="color: #2c3e3f;">@Model.Membership.FrozenUntil.Value.ToString("dd.MM.yyyy")</div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3" style="background: #f8f9fa;">
+                                                <div class="mb-3">
+                                                    <div class="text-muted small">Срок действия</div>
+                                                    <div class="fw-bold" style="color: #2c3e3f;">@Model.Membership.ValidityDays дней</div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="text-muted small">Всего занятий</div>
+                                                    <div class="fw-bold" style="color: #2c3e3f;">
+                                                        @if (Model.Membership.SessionsCount.HasValue)
+                                                        {
+                                                            <span>@Model.Membership.SessionsCount.Value занятий</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>Безлимит</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="text-muted small">Осталось занятий</div>
+                                                    <div class="fw-bold" style="color: #2c3e3f;">
+                                                        @if (Model.Membership.SessionsLeft.HasValue)
+                                                        {
+                                                            <span>@Model.Membership.SessionsLeft.Value занятий</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>—</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                @if (Model.Membership.CanFreeze)
+                                                {
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Заморозка</div>
+                                                        <div class="fw-bold" style="color: #67a69b;">
+                                                            @if (Model.Membership.FreezeUsed)
+                                                            {
+                                                                <span>Уже использована</span>
+                                                            }
+                                                            else if (Model.Membership.MaxFreezeDays.HasValue)
+                                                            {
+                                                                <span>До @Model.Membership.MaxFreezeDays.Value дней</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>Доступна</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Текущие записи -->
+                    <div class="tab-pane fade" id="bookings" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-0 pt-4">
+                                <h4 class="mb-0" style="color: #2c3e3f;">Текущие записи</h4>
+                                <hr style="width: 60px; margin: 8px 0 0 0; border-color: #67a69b; border-width: 2px;" />
+                            </div>
+                            <div class="card-body p-3">
+                                @if (!Model.CurrentBookings.Any())
+                                {
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-calendar-day fa-3x mb-3" style="color: #67a69b;"></i>
+                                        <p>Нет активных записей</p>
+                                        <a href="/Workouts" class="btn rounded-pill px-4" style="background-color: #67a69b; color: white;">Записаться</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row g-3">
+                                        @foreach (var booking in Model.CurrentBookings)
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm rounded-4">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between mb-2">
+                                                            <h6 class="fw-bold">@booking.WorkoutName</h6>
+                                                            <span class="badge bg-warning">Ожидает</span>
+                                                        </div>
+                                                        <div class="mb-2 text-muted small">
+                                                            <i class="fas fa-calendar me-1"></i> @booking.StartsAt.ToString("dd.MM.yyyy HH:mm")
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="cancelBooking(@booking.Id, '@booking.WorkoutName')">
+                                                            Отменить
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- История -->
+                    <div class="tab-pane fade" id="history" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-0 pt-4">
+                                <h4 class="mb-0" style="color: #2c3e3f;">История</h4>
+                                <hr style="width: 60px; margin: 8px 0 0 0; border-color: #67a69b; border-width: 2px;" />
+                            </div>
+                            <div class="card-body p-3">
+                                @if (!Model.HistoryBookings.Any())
+                                {
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-history fa-3x mb-3" style="color: #67a69b;"></i>
+                                        <p>История пуста</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row g-3">
+                                        @foreach (var booking in Model.HistoryBookings)
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="card border-0 shadow-sm rounded-4">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between mb-2">
+                                                            <h6 class="fw-bold">@booking.WorkoutName</h6>
+                                                            <span class="badge @(booking.Status == "Completed" ? "bg-success" : "bg-danger")">
+                                                                @(booking.Status == "Completed" ? "Посетил" : "Не пришёл")
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-muted small">
+                                                            <i class="fas fa-calendar me-1"></i> @booking.StartsAt.ToString("dd.MM.yyyy HH:mm")
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Расписание для тренера -->
+                    <div class="tab-pane fade" id="schedule" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-0 pt-4">
+                                <h4 class="mb-0" style="color: #2c3e3f;">Моё расписание</h4>
+                                <hr style="width: 60px; margin: 8px 0 0 0; border-color: #67a69b; border-width: 2px;" />
+                            </div>
+                            <div class="card-body p-3">
+                                <!-- Переключение недель -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill" id="prevWeekBtnT">
+                                        <i class="fas fa-chevron-left me-1"></i>Пред.
+                                    </button>
+                                    <span id="weekRangeT" class="fw-bold" style="color: #2c3e3f;"></span>
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill" id="nextWeekBtnT">
+                                        След.<i class="fas fa-chevron-right ms-1"></i>
+                                    </button>
+                                </div>
+
+                                <div class="week-days-trainer" id="weekDaysT" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px;"></div>
+
+                                <div id="scheduleListT">
+                                    <div class="text-center py-3">Загрузка...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-pills .nav-link.active {
+        background-color: #eef5f3 !important;
+        color: #2c3e3f !important;
+    }
+
+        .nav-pills .nav-link.active i {
+            color: #67a69b !important;
+        }
+
+    .day-card-t {
+        background: white;
+        border-radius: 12px;
+        padding: 8px 4px;
+        text-align: center;
+        cursor: pointer;
+        border: 1px solid #e0e6e5;
+        transition: all 0.2s;
+    }
+
+        .day-card-t:hover {
+            border-color: #67a69b;
+        }
+
+        .day-card-t.active {
+            background-color: #67a69b;
+            border-color: #67a69b;
+            color: white;
+        }
+
+    .day-name-t {
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .day-date-t {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .workout-item {
+        background: white;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-left: 3px solid #67a69b;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .workout-time {
+        font-weight: 700;
+        color: #67a69b;
+    }
+
+    .empty-day {
+        text-align: center;
+        padding: 30px;
+        color: #9aa8a9;
+    }
+
+    .tab-pane {
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.nav-pills .nav-link:first').addClass('active');
+        $('.tab-pane:first').addClass('show active');
+
+        @if (Model.UserRole == "Trainer")
+        {
+                <text>loadTrainerSchedule();</text>
+        }
+    });
+
+    // ========== КЛИЕНТ: ОТМЕНА ЗАПИСИ ==========
+    let cancelBookingId = null;
+    function cancelBooking(id, workoutName) {
+        cancelBookingId = id;
+        document.getElementById('cancelWorkoutName').innerText = workoutName;
+        var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        modal.show();
+    }
+    $(document).on('click', '#confirmCancelBtn', function() {
+        if (cancelBookingId) {
+            $.post('/Account/Profile?handler=CancelBooking', { bookingId: cancelBookingId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
+                .done(function(response) {
+                    if (response.success) location.reload();
+                })
+                .fail(function(xhr) {
+                    alert(xhr.responseJSON?.error || 'Ошибка отмены');
+                });
+        }
+    });
+
+    // ========== ТРЕНЕР: РАСПИСАНИЕ ==========
+    let trainerWorkouts = @Html.Raw(Json.Serialize(Model.Workouts));
+    let workoutTypes = @Html.Raw(Json.Serialize(Model.WorkoutTypes));
+    let trainerCurrentOffset = 0;
+    let trainerSelectedDate = null;
+
+    function getWeekDaysT(offset) {
+        let now = new Date();
+        let current = new Date(now);
+        current.setDate(now.getDate() + (offset * 7));
+        let day = current.getDay();
+        let diff = current.getDate() - day + (day === 0 ? -6 : 1);
+        let monday = new Date(current.setDate(diff));
+        let days = [];
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            days.push(d);
+        }
+        return days;
+    }
+
+    function getWeekRangeT(offset) {
+        let days = getWeekDaysT(offset);
+        let months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+        return `${days[0].getDate()} ${months[days[0].getMonth()]} - ${days[6].getDate()} ${months[days[6].getMonth()]}`;
+    }
+
+    function formatDateT(date) {
+        let d = new Date(date);
+        return d.toISOString().split('T')[0];
+    }
+
+    function renderWeekDaysT() {
+        let days = getWeekDaysT(trainerCurrentOffset);
+        let dayNames = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        let months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+        let html = '';
+        for (let i = 0; i < days.length; i++) {
+            let d = days[i];
+            let dateStr = formatDateT(d);
+            let isActive = (trainerSelectedDate === dateStr);
+            html += `<div class="day-card-t ${isActive ? 'active' : ''}" data-date="${dateStr}">
+                        <div class="day-name-t">${dayNames[i]}</div>
+                        <div class="day-date-t">${d.getDate()}</div>
+                        <div class="day-name-t" style="font-size:0.6rem;">${months[d.getMonth()]}</div>
+                    </div>`;
+        }
+        $('#weekDaysT').html(html);
+        $('#weekRangeT').text(getWeekRangeT(trainerCurrentOffset));
+
+        $('.day-card-t').click(function() {
+            trainerSelectedDate = $(this).data('date');
+            $('.day-card-t').removeClass('active');
+            $(this).addClass('active');
+            renderScheduleT();
+        });
+    }
+
+        function renderScheduleT() {
+        if (!trainerSelectedDate) {
+            let today = formatDateT(new Date());
+            trainerSelectedDate = today;
+        }
+        let filtered = trainerWorkouts.filter(w => w.startsAt.split('T')[0] === trainerSelectedDate);
+        filtered.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+
+        if (filtered.length === 0) {
+            $('#scheduleListT').html('<div class="empty-day">На этот день тренировок нет</div>');
+            return;
+        }
+
+        let html = '';
+        for (let w of filtered) {
+            let time = new Date(w.startsAt);
+            let timeStr = time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            let capacityText = w.availableSlots > 0 ? `${w.availableSlots} мест` : 'Нет мест';
+            let isCanceled = w.status === 'Canceled';
+            let isClosed = w.status === 'Closed';
+
+            let statusBadge = '';
+            let canceledClass = '';
+
+            if (isCanceled) {
+                statusBadge = '<span class="badge bg-danger ms-2">Отменена</span>';
+                canceledClass = 'workout-item-canceled';
+            } else if (isClosed) {
+                statusBadge = '<span class="badge bg-secondary ms-2">Завершена</span>';
+                canceledClass = 'workout-item-closed';
+            }
+
+            html += `<div class="workout-item ${canceledClass}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="workout-time">${timeStr}</div>
+                                <div class="fw-bold" style="color: #2c3e3f;">${w.name}${statusBadge}</div>
+                                <div class="small text-muted"><i class="fas fa-users me-1"></i>${w.currentBookingsCount}/${w.defaultMaxCapacity} записано</div>
+                            </div>
+                            <span class="badge ${w.availableSlots > 0 ? 'bg-success' : 'bg-danger'}">${capacityText}</span>
+                        </div>
+                    </div>`;
+        }
+        $('#scheduleListT').html(html);
+    }
+
+    function loadTrainerSchedule() {
+        let days = getWeekDaysT(trainerCurrentOffset);
+        if (!trainerSelectedDate) {
+            trainerSelectedDate = formatDateT(new Date());
+        }
+        renderWeekDaysT();
+        renderScheduleT();
+    }
+
+    $('#prevWeekBtnT').click(function() {
+        trainerCurrentOffset--;
+        loadTrainerSchedule();
+    });
+    $('#nextWeekBtnT').click(function() {
+        if (trainerCurrentOffset + 1 > 2) {
+            alert('Расписание доступно только на 2 недели вперёд');
+            return;
+        }
+        trainerCurrentOffset++;
+        loadTrainerSchedule();
+    });
+</script>
+
+<!-- Модалка отмены -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title" style="color: #2c3e3f;">Отмена записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <p class="text-muted">Отменить запись на <strong id="cancelWorkoutName" style="color: #2c3e3f;"></strong>?</p>
+            </div>
+            <div class="modal-footer border-0 pb-4 px-4">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Нет</button>
+                <button type="button" class="btn rounded-pill" id="confirmCancelBtn" style="background-color: #dc2626; color: white;">Да</button>
+            </div>
+        </div>
+    </div>
+</div>
