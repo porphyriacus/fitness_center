@@ -33,8 +33,9 @@ namespace Application.Features.Memberships.Commands.FreezeMembership
             }
             catch (MembershipException ex)
             {
-                return Result.Failure(Error.Failure("Membership.Error", ex.Message));
+                return Result.Failure(Error.Failure("Membership.FreezeError", ex.Message));
             }
+
         }
     }
 }

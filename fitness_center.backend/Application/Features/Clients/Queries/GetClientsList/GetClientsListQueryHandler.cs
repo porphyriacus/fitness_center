@@ -19,9 +19,9 @@ namespace Application.Features.Clients.Queries.GetClientsList
             Expression<Func<Client, bool>>? filter = null;
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                var term = request.SearchTerm.ToLower();
-                filter = c => c.Name.ToLower().Contains(term) ||
-                              c.Surname.ToLower().Contains(term);
+                var term = request.SearchTerm;
+                filter = c => c.Name.Contains(term) ||
+                              c.Surname.Contains(term);
             }
 
             Func<IQueryable<Client>, IOrderedQueryable<Client>>? orderBy = null;

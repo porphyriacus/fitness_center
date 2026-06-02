@@ -110,7 +110,11 @@
                         {
                             <li class="nav-item"><a class="nav-link" href="/Admin">Админ панель</a></li>
                         }
-                        <li class="nav-item"><a class="nav-link" href="/Account/Profile">Личный кабинет</a></li>
+                        if (!isAdmin)
+                        {
+
+                            <li class="nav-item"><a class="nav-link" href="/Account/Profile">Личный кабинет</a></li>
+                        }
                         <li class="nav-item">
                             <form asp-page="/Account/Logout" method="post">
                                 <button type="submit" class="btn btn-link nav-link" style="display:inline; cursor:pointer;">Выйти</button>

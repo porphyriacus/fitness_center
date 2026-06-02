@@ -30,13 +30,13 @@
             <table class="table table-admin mb-0">
                 <thead>
                     <tr>
-                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Id">ID</a></th>
-                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Name">Имя</a></th>
-                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="Surname">Фамилия</a></th>
-                        <th><a href="#" class="sort-link text-dark text-decoration-none" data-sort="RegisteredAt">Дата регистрации</a></th>
+                        <th><a href="#" class="sort-link text-decoration-none" data-sort="Id">ID</a></th>
+                        <th><a href="#" class="sort-link text-decoration-none" data-sort="Name">Имя</a></th>
+                        <th><a href="#" class="sort-link text-decoration-none" data-sort="Surname">Фамилия</a></th>
+                        <th><a href="#" class="sort-link text-decoration-none" data-sort="RegisteredAt">Дата регистрации</a></th>
                         <th>Фото</th>
                         <th>Действия</th>
-                    </td>
+                    </tr>
                 </thead>
                 <tbody>
                     @foreach (var client in Model.Clients)
@@ -58,10 +58,13 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="btn btn-sm btn-outline-primary" onclick='editClient(@client.Id, "@client.Name", "@client.Surname", "@client.ProfilePhotoUrl")'>
+                                    <button class="btn btn-sm btn-outline-success" onclick="manageMembership(@client.Id, '@client.Name')" title="Управление абонементом">
+                                        <i class="fas fa-ticket-alt"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick='editClient(@client.Id, "@client.Name", "@client.Surname", "@client.ProfilePhotoUrl")' title="Редактировать">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(@client.Id, '@client.Name')">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(@client.Id, '@client.Name')" title="Удалить">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -69,7 +72,7 @@
                         </tr>
                     }
                 </tbody>
-            </table>
+            </tr>
         </div>
     </div>
 </div>
@@ -136,12 +139,113 @@
     </div>
 </div>
 
+<!-- Модалка управления абонементом -->
+<div class="modal fade" id="membershipModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title" id="membershipModalTitle">Управление абонементом</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div id="membershipInfo"></div>
+                <div class="mt-3" id="membershipActions"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка назначения абонемента -->
+<div class="modal fade" id="assignMembershipModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Назначить абонемент</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="AssignMembership">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="ClientId" id="assignClientId" />
+                    <div class="mb-3">
+                        <label class="form-label">Тип абонемента</label>
+                        <select name="MembershipTypeId" id="membershipTypeId" class="form-select" required>
+                            <option value="">Выберите...</option>
+                            @foreach (var type in Model.MembershipTypes)
+                            {
+                                <option value="@type.Id">
+                                    @type.Name - @type.Price руб.
+                                    (@(type.SessionsCount.HasValue ? type.SessionsCount + " занятий" : "Безлимит"), @type.ValidityDays дней)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Назначить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка заморозки -->
+<div class="modal fade" id="freezeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title">Заморозить абонемент</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="FreezeMembership">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <input type="hidden" name="ClientId" id="freezeClientId" />
+                    <div class="mb-3">
+                        <label class="form-label">Количество дней заморозки</label>
+                        <input type="number" name="Days" id="freezeDays" class="form-control" required min="1" />
+                        <small class="text-muted" id="freezeDaysHint"></small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Заморозить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка подтверждения действия -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title" id="confirmTitle">Подтверждение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer border-0 pb-4 px-4">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary rounded-pill" id="confirmOk">Да</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
         @if (TempData["EditError"] != null)
         {
             @:$('#editModal').modal('show');
+        }
+        @if (TempData["MembershipError"] != null)
+        {
+            @:alert('@TempData["MembershipError"]');
         }
     });
 
@@ -154,9 +258,122 @@
     }
 
     function deleteClient(id, name) {
-        document.getElementById('deleteId').value = id;
-        document.getElementById('deleteName').innerText = name;
-        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        showConfirm(`Вы уверены, что хотите удалить клиента "${name}"?`, function() {
+            $.post('/Admin/Clients?handler=Delete', { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
+                .done(function() { location.reload(); })
+                .fail(function(xhr) { alert(xhr.responseJSON?.error || 'Ошибка'); });
+        });
+    }
+
+    function showConfirm(message, onOk) {
+        $('#confirmMessage').text(message);
+        $('#confirmModal').modal('show');
+        $('#confirmOk').off('click').on('click', function() {
+            $('#confirmModal').modal('hide');
+            onOk();
+        });
+    }
+
+    function manageMembership(clientId, clientName) {
+        $('#membershipModalTitle').text(`Абонемент: ${clientName}`);
+        $('#membershipInfo').html('<div class="text-center py-3">Загрузка...</div>');
+        $('#membershipActions').html('');
+        $('#membershipModal').modal('show');
+
+        $.get(`/Admin/Clients?handler=Membership&clientId=${clientId}`)
+            .done(function(data) {
+                if (data && data.id) {
+                    let statusText = data.statusText;
+                    let statusColor = data.statusColor;
+                    let totalSessionsText = data.isUnlimited ? 'Безлимит' : `${data.sessionsCount} занятий всего`;
+                    let leftSessionsText = data.isUnlimited ? 'Безлимит' : `${data.sessionsLeft} занятий осталось`;
+                    let expireText = '';
+                    if (data.expireDate) {
+                        expireText = new Date(data.expireDate).toLocaleDateString();
+                    } else if (data.activatedDate) {
+                        expireText = 'Срок не установлен';
+                    } else {
+                        expireText = 'Не активирован (активируется при первом посещении)';
+                    }
+
+                    let html = `
+                        <div class="alert alert-${statusColor} text-center">${statusText}</div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Тип:</div>
+                            <div class="col-7">${data.membershipTypeName}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Всего занятий:</div>
+                            <div class="col-7">${totalSessionsText}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Осталось занятий:</div>
+                            <div class="col-7">${leftSessionsText}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Срок действия:</div>
+                            <div class="col-7">${data.validityDays} дней</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Действует до:</div>
+                            <div class="col-7">${expireText}</div>
+                        </div>
+                    `;
+                    if (data.canFreeze && data.maxFreezeDays) {
+                        html += `<div class="row mb-2">
+                            <div class="col-5 text-muted">Заморозка:</div>
+                            <div class="col-7">до ${data.maxFreezeDays} дней</div>
+                        </div>`;
+                    }
+                    $('#membershipInfo').html(html);
+
+                    let actions = '';
+
+                    // Заморозка (активен, не заморожен, не закончен)
+                    if (!data.isFinished && !data.isFrozen && data.activatedDate && data.canFreeze && data.maxFreezeDays && !data.freezeUsed) {
+                        actions += `<button class="btn btn-primary w-100 mb-2 rounded-pill" onclick="openFreezeModal(${clientId}, ${data.maxFreezeDays})">Заморозить (до ${data.maxFreezeDays} дней)</button>`;
+                    } else if (!data.isFinished && !data.isFrozen && data.activatedDate && data.freezeUsed) {
+                        // Заморозка уже была использована
+                        actions += `<div class="alert alert-secondary text-center">Заморозка уже использована</div>`;
+                    }
+                    // Разморозка (для всех замороженных)
+                    if (data.isFrozen) {
+                        actions += `<button class="btn btn-primary w-100 mb-2 rounded-pill" onclick="unfreezeMembership(${clientId})">Разморозить</button>`;
+                    }
+
+                    $('#membershipActions').html(actions);
+                } else {
+                    $('#membershipInfo').html('<div class="alert alert-info text-center">Нет активного абонемента</div>');
+                    $('#membershipActions').html(`<button class="btn btn-primary w-100 rounded-pill" onclick="openAssignModal(${clientId})">Назначить абонемент</button>`);
+                }
+
+            })
+            .fail(function() {
+                $('#membershipInfo').html('<div class="alert alert-danger">Ошибка загрузки</div>');
+            });
+    }
+
+    function unfreezeMembership(clientId) {
+        showConfirm('Разморозить абонемент?', function() {
+            $.post('/Admin/Clients?handler=UnfreezeMembership', { clientId: clientId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
+                .done(function() { location.reload(); })
+                .fail(function(xhr) { alert(xhr.responseJSON?.error || 'Ошибка'); });
+        });
+    }
+
+    function openAssignModal(clientId) {
+        $('#membershipModal').modal('hide');
+        $('#assignClientId').val(clientId);
+        $('#assignMembershipModal').modal('show');
+    }
+
+    function openFreezeModal(clientId, maxDays) {
+        $('#membershipModal').modal('hide');
+        $('#freezeClientId').val(clientId);
+        $('#freezeDays').attr('max', maxDays);
+        $('#freezeDaysHint').text(`Максимум ${maxDays} дней (согласно типу абонемента)`);
+        $('#freezeDays').val(1);
+        $('#freezeModal').modal('show');
     }
 
     // Сортировка

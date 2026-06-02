@@ -22,15 +22,20 @@ namespace Application.Features.Memberships.Queries.GetClientMembership
 
             var membershipType = await unitOfWork.MembershipTypeRepository.GetByIdAsync(membership.MembershipTypeId, ct);
 
-            
+
             var dto = new MembershipDto
             {
                 Id = membership.Id,
                 ClientId = membership.ClientId,
                 MembershipTypeName = membershipType?.Name ?? string.Empty,
+                SessionsCount = membershipType?.SessionsCount,
+                ValidityDays = membershipType?.ValidityDays ?? 0,
+                CanFreeze = membershipType?.CanFreeze ?? false,
+                MaxFreezeDays = membershipType?.MaxFreezeDays,
                 ActivatedDate = membership.ActivatedDate,
                 ExpireDate = membership.ExpireDate,
                 SessionsLeft = membership.SessionsLeft,
+                FreezeUsed = membership.FreezeUsed,
                 IsFrozen = membership.IsFrozen,
                 FrozenUntil = membership.FrozenUntil,
                 IsFinished = membership.IsFinished
