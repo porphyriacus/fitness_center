@@ -128,7 +128,12 @@ namespace Infrastructure.Repositories
         public Task UpdateAsync(T entity,
          CancellationToken cancellationToken = default)
         {
-            _context.Entry(entity).State = EntityState.Modified;
+            var existing = _entities.FindAsync(entity.Id, cancellationToken);
+            if(existing == null)
+            {
+                throw new InvalidOperationException($"Entity {typeof(T).Name} with id {entity.Id} not found");
+            }
+            _context.Entry(existing).CurrentValues.SetValues(entity);
             return Task.CompletedTask;
         }
 
