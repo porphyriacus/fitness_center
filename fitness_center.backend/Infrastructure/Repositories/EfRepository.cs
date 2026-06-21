@@ -43,37 +43,6 @@ namespace Infrastructure.Repositories
             return await _entities.ToListAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<T>> ListWithFiltersAsync(
-    List<Expression<Func<T, bool>>>? filters,
-    Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
-    CancellationToken cancellationToken = default,
-    params Expression<Func<T, object>>[]? includesProperties)
-        {
-            IQueryable<T> query = _entities.AsQueryable();
-
-            // Применяем все фильтры по очереди
-            if (filters != null)
-            {
-                foreach (var filter in filters)
-                {
-                    if (filter != null)
-                        query = query.Where(filter);
-                }
-            }
-
-            if (includesProperties != null && includesProperties.Any())
-            {
-                foreach (var include in includesProperties)
-                    query = query.Include(include);
-            }
-
-            if (orderBy != null)
-                query = orderBy(query);
-            else
-                query = query.OrderBy(e => e.Id);
-
-            return await query.ToListAsync(cancellationToken);
-        }
         /// <summary>
         /// TODO сделать список фильтров пока костыльный etQueryable() неприятно   нужно только для тренировок по сути
         /// </summary>
@@ -83,16 +52,19 @@ namespace Infrastructure.Repositories
         /// <param name="includesProperties"></param>
         /// <returns></returns>
         public async Task<IReadOnlyList<T>> ListAsync(
-            Expression<Func<T, bool>>? filter,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
+            List<Expression<Func<T, bool>>>? filters = null,
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[]? includesProperties)
         {
             IQueryable<T> query = _entities.AsQueryable();
 
-            if (filter != null)
-                query = query.Where(filter);
-
+            foreach(var filter in filters)
+            {
+                if (filter != null)
+                    query = query.Where(filter);
+            }
+          
             if (includesProperties != null && includesProperties.Any())
             {
                 foreach (var include in includesProperties)

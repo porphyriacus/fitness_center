@@ -15,18 +15,18 @@ namespace Application.Features.MembershipTypes.Queries.GetMembershipTypesList
     {
         public async Task<Result<IReadOnlyList<MembershipTypeDto>>> Handle(GetMembershipTypesListQuery request, CancellationToken cancellationToken)
         {
-            Expression<Func<MembershipType, bool>>? filter = null;
+            List<Expression<Func<MembershipType, bool>>>? filter = null;
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
                 var search = request.SearchTerm.ToLower();
-                filter = mt => mt.Name.ToLower().Contains(search) || mt.Description.ToLower().Contains(search);
+                filter.Add(mt => mt.Name.ToLower().Contains(search) || mt.Description.ToLower().Contains(search));
             }
 
             Func<IQueryable<MembershipType>, IOrderedQueryable<MembershipType>>? orderBy = null;
 
 
-            var types = await unitOfWork.MembershipTypeRepository.ListAsync(filter, orderBy, cancellationToken);
+            var types = await unitOfWork.MembershipTypeRepository.ListAsync(orderBy, filter, cancellationToken);
 
             var sorted = (request.SortBy?.ToLower()) switch
             {

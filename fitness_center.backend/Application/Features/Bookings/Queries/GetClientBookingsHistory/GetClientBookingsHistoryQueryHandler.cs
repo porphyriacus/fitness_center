@@ -1,10 +1,14 @@
 ﻿using Application.Common.Models;
+using Application.Features.Bookings;
+using Application.Features.Bookings.Queries;
 using AutoMapper;
+using Core.Abstractions;
 using Core.Enums;
 using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,10 +19,15 @@ namespace Application.Features.Bookings.Queries.GetClientBookingsHistory
     {
         public async Task<Result<IReadOnlyList<BookingDto>>> Handle(GetClientBookingsHistoryQuery request, CancellationToken ct)
         {
+            var filters = new List<Expression<Func<Booking, bool>>>
+            {
+                 b => b.ClientId == request.ClientId &&
+                     (b.Status == BookingStatus.Completed || b.Status == BookingStatus.NotCome)
+            };
             var bookings = await unitOfWork.BookingRepository.ListAsync(
-                b => b.ClientId == request.ClientId &&
-                     (b.Status == BookingStatus.Completed || b.Status == BookingStatus.NotCome),
+               
                 q => q.OrderByDescending(b => b.Workout.StartsAt),
+                filters,
                 ct,
                 b => b.Workout,
                 b => b.Workout.WorkoutType,

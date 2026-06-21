@@ -6,6 +6,7 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,11 +21,15 @@ namespace Application.Features.WorkoutTypes.Commands.Delete
             {
                 return WorkoutTypeErrors.NotFound;
             }
+            var filters = new List<Expression<Func<Workout, bool>>>
+            {
+                w => w.WorkoutType.Id == request.id
+            };
             var workouts = await unitOfWork.WorkoutRepository.ListAsync(
-               w => w.WorkoutType.Id == request.id,
                null,
+               filters,
                cancellationToken
-           );
+            );
 
             foreach (var workout in workouts)
             {

@@ -70,9 +70,9 @@ namespace Application.Features.Workouts.Queries.GetWorkoutsList
                 orderBy = q => q.OrderBy(w => w.StartsAt);
             }
 
-            var workouts = await _unitOfWork.WorkoutRepository.ListWithFiltersAsync(
-                filters,
+            var workouts = await _unitOfWork.WorkoutRepository.ListAsync(
                 orderBy,
+                filters,
                 cancellationToken,
                 w => w.Bookings,
                 w => w.Trainer,

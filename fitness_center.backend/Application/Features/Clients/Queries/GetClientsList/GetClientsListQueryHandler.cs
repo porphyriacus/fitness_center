@@ -16,12 +16,12 @@ namespace Application.Features.Clients.Queries.GetClientsList
     {
         public async Task<Result<IReadOnlyList<ClientDto>>> Handle(GetClientsListQuery request, CancellationToken cancellationToken)
         {
-            Expression<Func<Client, bool>>? filter = null;
+            List<Expression<Func<Client, bool>>>? filter = null;
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm;
-                filter = c => c.Name.Contains(term) ||
-                              c.Surname.Contains(term);
+                filter.Add(c => c.Name.Contains(term) ||
+                              c.Surname.Contains(term));
             }
 
             Func<IQueryable<Client>, IOrderedQueryable<Client>>? orderBy = null;
@@ -42,7 +42,7 @@ namespace Application.Features.Clients.Queries.GetClientsList
                 };
             }
 
-            var clients = await unitOfWork.ClientRepository.ListAsync(filter, orderBy, cancellationToken);
+            var clients = await unitOfWork.ClientRepository.ListAsync(orderBy, filter, cancellationToken);
 
             var dtos = mapper.Map<List<ClientDto>>(clients);
 

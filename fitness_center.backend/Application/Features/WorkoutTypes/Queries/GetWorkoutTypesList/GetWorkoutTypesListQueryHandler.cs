@@ -18,24 +18,28 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList
         public async Task<Result<IReadOnlyList<WorkoutTypeDto>>> Handle(GetWorkoutTypesListQuery request, CancellationToken cancellation)
         {
 
-            Expression<Func<WorkoutType, bool>>? filter = null;
+            List<Expression<Func<WorkoutType, bool>>>? filters = null;
             if (!String.IsNullOrEmpty(request.SearchTerm))
             {
                 string search = request.SearchTerm.ToLower();
                 if (!String.IsNullOrEmpty(request.SearchField))
                 {
-                    filter = request.SearchField.ToLower() switch
+                    Expression<Func<WorkoutType, bool>>? filter = request.SearchField.ToLower() switch
                     {
                         "name" => wt => wt.Name.ToLower().Contains(search),
                         "description" => wt => wt.Description.ToLower().Contains(search),
                         _ => null
                     };
-
+                    if (filter != null)
+                        filters?.Add(filter);
                 }
                 else {
-                    filter =
+                    Expression<Func<WorkoutType, bool>>? filter =
                            wt => wt.Name.ToLower().Contains(search)
                         || wt.Description.ToLower().Contains(search);
+
+                    if (filter != null)
+                        filters?.Add(filter);
                 }
 
             }
@@ -55,7 +59,7 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList
                     _ => q => q.OrderBy(c => c.Id)
                 };
             }
-            var types = await unitOfWork.WorkoutTypeRepository.ListAsync(filter, orderBy, cancellation);
+            var types = await unitOfWork.WorkoutTypeRepository.ListAsync( orderBy, filters, cancellation);
 
             var dtos = mapper.Map<List<WorkoutTypeDto>>(types);
             return Result<IReadOnlyList<WorkoutTypeDto>>.Ok(dtos);

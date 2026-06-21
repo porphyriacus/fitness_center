@@ -70,17 +70,20 @@ namespace Infrastructure.Repositories
         }
 
         public async Task<IReadOnlyList<Membership>> ListAsync(
-            Expression<Func<Membership, bool>>? filter,
             Func<IQueryable<Membership>, IOrderedQueryable<Membership>>? orderBy,
+            List<Expression<Func<Membership, bool>>>? filters,
             CancellationToken cancellationToken = default,
             params Expression<Func<Membership, object>>[]? includesProperties)
         {
             IQueryable<Membership> query = _entities
                 .Include(m => m.MembershipType)  
                 .AsQueryable();
+            foreach(var filter in filters)
+            {
+                if (filter != null)
+                    query = query.Where(filter);
+            }
 
-            if (filter != null)
-                query = query.Where(filter);
 
             if (includesProperties != null && includesProperties.Any())
             {

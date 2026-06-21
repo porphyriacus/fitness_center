@@ -24,19 +24,23 @@ namespace Application.Features.Trainers.Queries.GetTrainerSchedule
                 return TrainerErrors.NotFound;
             }
 
-            Expression<Func<Core.Entities.Workout, bool>> filter = w =>
-                w.TrainerId == request.TrainerId &&
-                (!request.IncludePast || w.StartsAt >= DateTime.UtcNow) &&
-                (!request.FromDate.HasValue || w.StartsAt >= request.FromDate.Value) &&
-                (!request.ToDate.HasValue || w.StartsAt <= request.ToDate.Value);
+            List<Expression<Func<Core.Entities.Workout, bool>>>? filters = new List<Expression<Func<Workout, bool>>>();
+
+            filters.Add(w => w.TrainerId == request.TrainerId);
+            if (request.IncludePast)
+                filters?.Add(w => w.StartsAt >= DateTime.UtcNow);
+            if(request.FromDate.HasValue)
+                filters?.Add(w => w.StartsAt >= request.FromDate.Value);
+            if (request.ToDate.HasValue)
+                filters?.Add(w => w.StartsAt <= request.ToDate.Value);
 
 
             Func<IQueryable<Core.Entities.Workout>, IOrderedQueryable<Core.Entities.Workout>> orderBy =
                 q => q.OrderBy(w => w.StartsAt);
 
             var workouts = await unitOfWork.WorkoutRepository.ListAsync(
-                    filter
-                , orderBy
+                orderBy
+                , filters
                 , cancellationToken
                 , w => w.Bookings
                 , w => w.WorkoutType

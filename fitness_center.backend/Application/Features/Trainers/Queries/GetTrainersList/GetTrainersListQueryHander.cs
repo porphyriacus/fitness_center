@@ -15,24 +15,26 @@ namespace Application.Features.Trainers.Queries.GetTrainersList
     {
         public async Task<Result<IReadOnlyList<TrainerDto>>> Handle(GetTrainersListQuery request, CancellationToken cancellationToken)
         {
-            Expression<Func<Trainer, bool>>? filter = null;
+            List<Expression<Func<Trainer, bool>>>? filters = null;
             if (!String.IsNullOrEmpty(request.SearchTerm)) {
 
                 string search = request.SearchTerm.ToLower();
                 if (!String.IsNullOrEmpty(request.SearchField))
                 {
-                    filter = request.SearchField.ToLower() switch
+                    Expression<Func<Trainer, bool>>? filter = request.SearchField.ToLower() switch
                     {
                         "name" => tr => tr.Name.ToLower().Contains(search),
                         "surname" => tr => tr.Surname.ToLower().Contains(search),
                         "specialization" => tr => tr.Specialization.Name.ToLower().Contains(search),  
                         _ => null
                     };
+                    if(filter != null)
+                        filters?.Add(filter);
                 }
                 else
                 {
-                    filter = tr => tr.Name.ToLower().Contains(search) 
-                                || tr.Surname.ToLower().Contains(search);
+                    filters?.Add( tr => tr.Name.ToLower().Contains(search) 
+                                || tr.Surname.ToLower().Contains(search));
                 }
             }
             Func<IQueryable<Trainer>, IOrderedQueryable<Trainer>>? orderBy = null;
@@ -50,7 +52,7 @@ namespace Application.Features.Trainers.Queries.GetTrainersList
                 };
             }
 
-            var traibers = await unitOfWork.TrainerRepository.ListAsync(filter, orderBy, cancellationToken, includesProperties: t => t.Specialization);
+            var traibers = await unitOfWork.TrainerRepository.ListAsync(orderBy, filters, cancellationToken, includesProperties: t => t.Specialization);
             var dtos = mapper.Map<List<TrainerDto>>(traibers);
 
             return Result<IReadOnlyList<TrainerDto>>.Ok(dtos);

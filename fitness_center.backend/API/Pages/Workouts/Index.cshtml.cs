@@ -2,6 +2,7 @@ using Application.Features.Bookings;
 using Application.Features.Bookings.Commands.CancelBooking;
 using Application.Features.Bookings.Commands.Create;
 using Application.Features.Bookings.Queries;
+using Application.Features.Bookings.Queries.GetClientBookingsHistory;
 using Application.Features.Clients.Queries.GetClientByUserId;
 using Application.Features.Workouts;
 using Application.Features.Workouts.Queries.GetWorkoutsList;
@@ -53,7 +54,7 @@ namespace API.Pages.Workouts
                 var clientResult = await _mediator.Send(new GetClientByUserIdQuery(user.Id));
                 if (clientResult.IsSuccess && clientResult.Value != null)
                 {
-                    var bookingsResult = await _mediator.Send(new GetClientBookingsQuery(clientResult.Value.Id));
+                    var bookingsResult = await _mediator.Send(new GetClientBookingsHistoryQuery(clientResult.Value.Id));
                     if (bookingsResult.IsSuccess)
                         ClientBookings = bookingsResult.Value.ToList();
                 }
