@@ -54,7 +54,7 @@ namespace API.Pages.Workouts
                 var clientResult = await _mediator.Send(new GetClientByUserIdQuery(user.Id));
                 if (clientResult.IsSuccess && clientResult.Value != null)
                 {
-                    var bookingsResult = await _mediator.Send(new GetClientBookingsHistoryQuery(clientResult.Value.Id));
+                    var bookingsResult = await _mediator.Send(new GetClientBookingsQuery(clientResult.Value.Id));
                     if (bookingsResult.IsSuccess)
                         ClientBookings = bookingsResult.Value.ToList();
                 }
