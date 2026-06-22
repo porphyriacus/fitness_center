@@ -15,7 +15,7 @@ namespace Application.Features.Trainers.Queries.GetTrainersList
     {
         public async Task<Result<IReadOnlyList<TrainerDto>>> Handle(GetTrainersListQuery request, CancellationToken cancellationToken)
         {
-            List<Expression<Func<Trainer, bool>>>? filters = null;
+            List<Expression<Func<Trainer, bool>>>? filters = new List<Expression<Func<Trainer, bool>>>();
             if (!String.IsNullOrEmpty(request.SearchTerm)) {
 
                 string search = request.SearchTerm.ToLower();
@@ -29,11 +29,11 @@ namespace Application.Features.Trainers.Queries.GetTrainersList
                         _ => null
                     };
                     if(filter != null)
-                        filters?.Add(filter);
+                        filters.Add(filter);
                 }
                 else
                 {
-                    filters?.Add( tr => tr.Name.ToLower().Contains(search) 
+                    filters.Add( tr => tr.Name.ToLower().Contains(search) 
                                 || tr.Surname.ToLower().Contains(search));
                 }
             }

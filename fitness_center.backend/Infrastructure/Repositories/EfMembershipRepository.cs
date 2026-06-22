@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public interface IMembershipRepository : IRepository<Membership>
-    {
+    //public interface IMembershipRepository : IRepository<Membership>
+    //{
         
-    }
-    public class EfMembershipRepository : IMembershipRepository
+    //}
+    public class EfMembershipRepository : IRepository<Membership>
     {
         private readonly AppDbContext _context;
         private readonly DbSet<Membership> _entities;
@@ -125,37 +125,7 @@ namespace Infrastructure.Repositories
 
             return membership;
         }
-        public async Task<IReadOnlyList<Membership>> ListWithFiltersAsync(
-    List<Expression<Func<Membership, bool>>>? filters,
-    Func<IQueryable<Membership>, IOrderedQueryable<Membership>>? orderBy,
-    CancellationToken cancellationToken = default,
-    params Expression<Func<Membership, object>>[]? includesProperties)
-        {
-            IQueryable<Membership> query = _entities.AsQueryable();
-
-            // Применяем все фильтры по очереди
-            if (filters != null)
-            {
-                foreach (var filter in filters)
-                {
-                    if (filter != null)
-                        query = query.Where(filter);
-                }
-            }
-
-            if (includesProperties != null && includesProperties.Any())
-            {
-                foreach (var include in includesProperties)
-                    query = query.Include(include);
-            }
-
-            if (orderBy != null)
-                query = orderBy(query);
-            else
-                query = query.OrderBy(e => e.Id);
-
-            return await query.ToListAsync(cancellationToken);
-        }
+        
         public async Task AddAsync(
             Membership entity,
             CancellationToken cancellationToken = default)
@@ -163,23 +133,16 @@ namespace Infrastructure.Repositories
             await _entities.AddAsync(entity, cancellationToken);
         }
 
-        public Task UpdateAsync(
+        public async Task UpdateAsync(
             Membership entity,
             CancellationToken cancellationToken = default)
         {
-            var existing = _context.ChangeTracker.Entries<Membership>()
-                .FirstOrDefault(e => e.Entity.Id == entity.Id);
-
-            if (existing != null)
+            var existing = await _entities.FindAsync(entity.Id, cancellationToken);
+            if (existing == null)
             {
-                _context.Entry(existing.Entity).CurrentValues.SetValues(entity);
+                throw new InvalidOperationException($"Entity Membership with id {entity.Id} not found");
             }
-            else
-            {
-                _context.Entry(entity).State = EntityState.Modified;
-            }
-
-            return Task.CompletedTask;
+            _context.Entry(existing).CurrentValues.SetValues(entity);
         }
 
         public Task DeleteAsync(

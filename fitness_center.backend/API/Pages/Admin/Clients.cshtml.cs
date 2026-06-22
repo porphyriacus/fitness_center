@@ -8,6 +8,7 @@ using Application.Features.Memberships.Commands.UnfreezeMembership;
 using Application.Features.Memberships.Queries.GetClientMembership;
 using Application.Features.MembershipTypes;
 using Application.Features.MembershipTypes.Queries.GetMembershipTypesList;
+using Application.Common.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,60 +26,36 @@ namespace API.Pages.Admin
             _mediator = mediator;
         }
 
+        public PagedResult<ClientDto>? Clients { get; set; }
         public List<MembershipTypeDto> MembershipTypes { get; set; } = new();
-        public List<ClientDto> Clients { get; set; } = new();
 
-        public async Task OnGetAsync(string? searchTerm, string? sortBy, bool sortDescending = false)
+        public async Task OnGetAsync(
+            int pageNumber = 1, 
+            int pageSize = 10, 
+            string? searchTerm = null, 
+            string? sortBy = null, 
+            bool sortDescending = false)
         {
-            // ≈сли есть поисковый запрос, ищем сначала в нижнем регистре
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                var queryLower = new GetClientsListQuery
-                {
-                    SearchTerm = searchTerm.ToLower(),
-                    SortBy = sortBy ?? "Id",
-                    SortDescending = sortDescending
-                };
-                var resultLower = await _mediator.Send(queryLower);
+            ViewData["SearchTerm"] = searchTerm ?? "";
+            ViewData["PageSize"] = pageSize.ToString();
+            ViewData["SortBy"] = sortBy ?? "Id";
+            ViewData["SortDescending"] = sortDescending.ToString();
 
-                if (resultLower.IsSuccess && resultLower.Value.Any())
-                {
-                    Clients = resultLower.Value.ToList();
-                }
-                else
-                {
-                    // ≈сли не нашли, пробуем с заглавной первой буквой
-                    var capitalized = char.ToUpper(searchTerm[0]) + searchTerm[1..].ToLower();
-                    var queryCapitalized = new GetClientsListQuery
-                    {
-                        SearchTerm = capitalized,
-                        SortBy = sortBy ?? "Id",
-                        SortDescending = sortDescending
-                    };
-                    var resultCapitalized = await _mediator.Send(queryCapitalized);
-
-                    if (resultCapitalized.IsSuccess)
-                    {
-                        Clients = resultCapitalized.Value.ToList();
-                    }
-                }
-            }
-            else
+            var query = new GetClientsListQuery
             {
-                // Ѕез поиска Ц просто загружаем всех
-                var query = new GetClientsListQuery
-                {
-                    SortBy = sortBy ?? "Id",
-                    SortDescending = sortDescending
-                };
-                var result = await _mediator.Send(query);
-                if (result.IsSuccess)
-                {
-                    Clients = result.Value.ToList();
-                }
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                SortBy = sortBy ?? "Id",
+                SortDescending = sortDescending
+            };
+
+            var result = await _mediator.Send(query);
+            if (result.IsSuccess)
+            {
+                Clients = result.Value;
             }
 
-            // «агружаем типы абонементов дл€ модалки назначени€
             var typesResult = await _mediator.Send(new GetMembershipTypesListQuery());
             if (typesResult.IsSuccess)
             {
@@ -91,8 +68,7 @@ namespace API.Pages.Admin
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(surname))
             {
                 TempData["EditError"] = "»м€ и фамили€ об€зательны";
-                await OnGetAsync(null, null, false);
-                return Page();
+                return RedirectToPage();
             }
 
             var command = new UpdateClientProfileCommand(id, name, surname, profilePhotoUrl);
@@ -101,8 +77,7 @@ namespace API.Pages.Admin
             if (!result.IsSuccess)
             {
                 TempData["EditError"] = result.Error.Message;
-                await OnGetAsync(null, null, false);
-                return Page();
+                return RedirectToPage();
             }
 
             return RedirectToPage();

@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace Application.Features.Clients.Queries.GetClientsList
 {
-    public class GetClientsListQuery : IRequest<Result<IReadOnlyList<ClientDto>>>
+    public class GetClientsListQuery : IRequest<Result<PagedResult<ClientDto>>>
     {
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
         public string? SearchTerm { get; set; }
         public string? SortBy { get; set; }      // "Name", "Surname", "RegisteredAt"
         public bool SortDescending { get; set; }

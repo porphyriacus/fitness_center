@@ -18,7 +18,7 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList
         public async Task<Result<IReadOnlyList<WorkoutTypeDto>>> Handle(GetWorkoutTypesListQuery request, CancellationToken cancellation)
         {
 
-            List<Expression<Func<WorkoutType, bool>>>? filters = null;
+            List<Expression<Func<WorkoutType, bool>>>? filters = new List<Expression<Func<WorkoutType, bool>>>();
             if (!String.IsNullOrEmpty(request.SearchTerm))
             {
                 string search = request.SearchTerm.ToLower();
@@ -31,7 +31,7 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList
                         _ => null
                     };
                     if (filter != null)
-                        filters?.Add(filter);
+                        filters.Add(filter);
                 }
                 else {
                     Expression<Func<WorkoutType, bool>>? filter =
@@ -39,7 +39,7 @@ namespace Application.Features.WorkoutTypes.Queries.GetWorkoutTypesList
                         || wt.Description.ToLower().Contains(search);
 
                     if (filter != null)
-                        filters?.Add(filter);
+                        filters.Add(filter);
                 }
 
             }

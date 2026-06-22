@@ -14,11 +14,14 @@
         <div class="card-body">
             <form method="get">
                 <div class="row g-3">
-                    <div class="col-md-8">
-                        <input type="text" name="SearchTerm" class="form-control" placeholder="Поиск по имени или фамилии..." value="@Request.Query["SearchTerm"]" />
+                    <div class="col-md-6">
+                        <input type="text" name="searchTerm" class="form-control" placeholder="Поиск по имени или фамилии..." value="@(ViewData["SearchTerm"] ?? "")" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100 rounded-pill">Найти</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/Admin/Clients" class="btn btn-outline-secondary w-100 rounded-pill">Сбросить</a>
                     </div>
                 </div>
             </form>
@@ -39,44 +42,99 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var client in Model.Clients)
+                    @if (Model.Clients?.Items != null && Model.Clients.Items.Any())
+                    {
+                        @foreach (var client in Model.Clients.Items)
+                        {
+                            <tr>
+                                <td>@client.Id</td>
+                                <td>@client.Name</td>
+                                <td>@client.Surname</td>
+                                <td>@client.RegisteredAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(client.ProfilePhotoUrl))
+                                    {
+                                        <img src="@client.ProfilePhotoUrl" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-success" onclick="manageMembership(@client.Id, '@client.Name')" title="Управление абонементом">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" onclick='editClient(@client.Id, "@client.Name", "@client.Surname", "@client.ProfilePhotoUrl")' title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(@client.Id, '@client.Name')" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@client.Id</td>
-                            <td>@client.Name</td>
-                            <td>@client.Surname</td>
-                            <td>@client.RegisteredAt.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(client.ProfilePhotoUrl))
-                                {
-                                    <img src="@client.ProfilePhotoUrl" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;" />
-                                }
-                                else
-                                {
-                                    <i class="fas fa-user-circle fa-2x text-muted"></i>
-                                }
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-outline-success" onclick="manageMembership(@client.Id, '@client.Name')" title="Управление абонементом">
-                                        <i class="fas fa-ticket-alt"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick='editClient(@client.Id, "@client.Name", "@client.Surname", "@client.ProfilePhotoUrl")' title="Редактировать">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(@client.Id, '@client.Name')" title="Удалить">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <td colspan="6" class="text-center py-4 text-muted">Клиенты не найдены</td>
                         </tr>
                     }
                 </tbody>
-            </tr>
+            </table>
         </div>
     </div>
-</div>
 
+    <!-- Пагинация -->
+    @if (Model.Clients != null && Model.Clients.TotalPages > 1)
+    {
+        var currentPage = Model.Clients.PageNumber;
+        var totalPages = Model.Clients.TotalPages;
+        var searchTerm = ViewData["SearchTerm"]?.ToString() ?? "";
+        var pageSize = ViewData["PageSize"]?.ToString() ?? "10";
+        var sortBy = ViewData["SortBy"]?.ToString() ?? "Id";
+        var sortDescending = ViewData["SortDescending"]?.ToString() == "true";
+
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                @if (Model.Clients.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pageNumber=@(currentPage - 1)&pageSize=@pageSize&searchTerm=@searchTerm&sortBy=@sortBy&sortDescending=@sortDescending.ToString().ToLower()">&laquo;</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                }
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="?pageNumber=@i&pageSize=@pageSize&searchTerm=@searchTerm&sortBy=@sortBy&sortDescending=@sortDescending.ToString().ToLower()">@i</a>
+                    </li>
+                }
+
+                @if (Model.Clients.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?pageNumber=@(currentPage + 1)&pageSize=@pageSize&searchTerm=@searchTerm&sortBy=@sortBy&sortDescending=@sortDescending.ToString().ToLower()">&raquo;</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                }
+            </ul>
+            <div class="text-center text-muted small">
+                Страница @currentPage из @totalPages (всего @Model.Clients.TotalCount записей)
+            </div>
+        </nav>
+    }
+</div>
 <!-- Модалка редактирования -->
 <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">

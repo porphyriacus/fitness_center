@@ -15,13 +15,13 @@ namespace Infrastructure.Repositories
         private IDbContextTransaction? _transaction;
 
 
-        private readonly Lazy<IRepository<Client>> _clientrepository;
+        private readonly Lazy<IClientRepository> _clientrepository;
         private readonly Lazy<IRepository<Trainer>> _trainerRepository;
         private readonly Lazy<IRepository<Specialization>> _specializationRepository;
 
         private readonly Lazy<IRepository<Booking>> _bookingRepository;
 
-        private readonly Lazy<IMembershipRepository> _membershipRepository;
+        private readonly Lazy<IRepository<Membership>> _membershipRepository;
         private readonly Lazy<IRepository<MembershipType>> _membershipTypeRepository;
         private readonly Lazy<IRepository<Workout>> _workoutRepository;
         private readonly Lazy<IRepository<WorkoutType>> _workoutTypeRepository;
@@ -30,8 +30,8 @@ namespace Infrastructure.Repositories
         {
             _context = context;
 
-            _clientrepository = new Lazy<IRepository<Client>>(() =>
-                new EfRepository<Client>(context));
+            _clientrepository = new Lazy<IClientRepository>(() =>
+                new EfClientRepository(context));
             _trainerRepository = new Lazy<IRepository<Trainer>>(() =>
                 new EfRepository<Trainer>(context));
             _specializationRepository = new Lazy<IRepository<Specialization>>(()=>
@@ -41,7 +41,7 @@ namespace Infrastructure.Repositories
                 new EfRepository<Booking>(context));
 
 
-            _membershipRepository = new Lazy<IMembershipRepository>(() 
+            _membershipRepository = new Lazy<IRepository<Membership>>(() 
                 => new EfMembershipRepository(context));
             _membershipTypeRepository = new Lazy<IRepository<MembershipType>>(() =>
                 new EfRepository<MembershipType>(context));
@@ -53,7 +53,7 @@ namespace Infrastructure.Repositories
 
         }
 
-        public IRepository<Client> ClientRepository => _clientrepository.Value;
+        public IClientRepository ClientRepository => _clientrepository.Value;
         public IRepository<Trainer> TrainerRepository => _trainerRepository.Value;
         public IRepository<Specialization> SpecializationRepository => _specializationRepository.Value;
 

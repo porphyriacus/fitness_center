@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 namespace Application.Features.Clients.Queries.GetClientsList
 {
     public class GetClientsListQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-        : IRequestHandler<GetClientsListQuery, Result<IReadOnlyList<ClientDto>>>
+        : IRequestHandler<GetClientsListQuery, Result<PagedResult<ClientDto>>>
     {
-        public async Task<Result<IReadOnlyList<ClientDto>>> Handle(GetClientsListQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<ClientDto>>> Handle(GetClientsListQuery request, CancellationToken cancellationToken)
         {
-            List<Expression<Func<Client, bool>>>? filter = null;
+            List<Expression<Func<Client, bool>>>? filter = new List<Expression<Func<Client, bool>>>(); ;
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm;
@@ -42,11 +42,25 @@ namespace Application.Features.Clients.Queries.GetClientsList
                 };
             }
 
-            var clients = await unitOfWork.ClientRepository.ListAsync(orderBy, filter, cancellationToken);
+            var (clients, totalCount) = await unitOfWork.ClientRepository.GetPagedAsync(
+                request.PageNumber
+                , request.PageSize
+                , orderBy
+                , filter
+                , null
+                , cancellationToken);
 
             var dtos = mapper.Map<List<ClientDto>>(clients);
+            var result = new PagedResult<ClientDto>
+            {
+                  Items = dtos
+                , TotalCount = totalCount
+                , PageNumber = request.PageNumber
+                , PageSize = request.PageSize
+            };
 
-            return Result<IReadOnlyList<ClientDto>>.Ok(dtos);
+
+            return Result<PagedResult<ClientDto>>.Ok(result);
         }
     }
 }

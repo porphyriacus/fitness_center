@@ -10,7 +10,7 @@ namespace Core.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Client> ClientRepository { get; }
+        IClientRepository ClientRepository { get; }
         IRepository<Trainer> TrainerRepository { get; }
         IRepository<Specialization> SpecializationRepository { get; }
 

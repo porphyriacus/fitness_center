@@ -54,8 +54,12 @@ namespace API.Pages.Admin
             var workoutsResult = await _mediator.Send(new GetWorkoutsListQuery { IncludePast = true });
             if (workoutsResult.IsSuccess) Workouts = workoutsResult.Value.OrderBy(w => w.StartsAt).ToList();
 
+
             var clientsResult = await _mediator.Send(new GetClientsListQuery());
-            if (clientsResult.IsSuccess) Clients = clientsResult.Value.ToList();
+            if (clientsResult.IsSuccess && clientsResult.Value != null)
+            {
+                Clients = clientsResult.Value.Items.ToList();  
+            }
         }
 
         public async Task<IActionResult> OnPostCreateAsync(int workoutTypeId, int trainerId, DateTime startAt)

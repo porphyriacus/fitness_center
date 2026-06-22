@@ -19,6 +19,7 @@ namespace Infrastructure.Repositories
             _entities = _context.Set<T>();
         }
 
+
         public async Task<T?> GetByIdAsync(int id,
          CancellationToken cancellationToken = default,
          params Expression<Func<T, object>>[]? includesProperties)
@@ -59,12 +60,17 @@ namespace Infrastructure.Repositories
         {
             IQueryable<T> query = _entities.AsQueryable();
 
-            foreach(var filter in filters)
+            if (filters != null)
             {
-                if (filter != null)
-                    query = query.Where(filter);
+                foreach (var filter in filters)
+                {
+                    if (filter != null)
+                    {
+                        query = query.Where(filter);
+                    }
+                }
             }
-          
+
             if (includesProperties != null && includesProperties.Any())
             {
                 foreach (var include in includesProperties)
@@ -97,16 +103,15 @@ namespace Infrastructure.Repositories
         }
 
 
-        public Task UpdateAsync(T entity,
+        public async Task UpdateAsync(T entity,
          CancellationToken cancellationToken = default)
         {
-            var existing = _entities.FindAsync(entity.Id, cancellationToken);
+            var existing = await _entities.FindAsync(entity.Id, cancellationToken);
             if(existing == null)
             {
                 throw new InvalidOperationException($"Entity {typeof(T).Name} with id {entity.Id} not found");
             }
             _context.Entry(existing).CurrentValues.SetValues(entity);
-            return Task.CompletedTask;
         }
 
 

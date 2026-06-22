@@ -10,7 +10,6 @@ namespace Core.Abstractions
 {
     public interface IRepository<T> where T : Entity
     {
-
         /// <summary>
         /// Поиск сущности по Id
         /// </summary>
