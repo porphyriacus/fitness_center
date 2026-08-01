@@ -36,10 +36,7 @@ namespace Core.Entities
 
         public override int GetHashCode()
         {
-            if (Id == 0)
-                return GetType().GetHashCode();
-
-            return Id.GetHashCode();
+            return Id == 0 ? GetType().GetHashCode() : Id.GetHashCode();
         }
     }
 

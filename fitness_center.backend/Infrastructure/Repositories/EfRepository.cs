@@ -45,9 +45,7 @@ namespace Infrastructure.Repositories
         }
 
         /// <summary>
-        /// TODO сделать список фильтров пока костыльный etQueryable() неприятно   нужно только для тренировок по сути
         /// </summary>
-        /// <param name="filter"></param>
         /// <param name="orderBy"></param>
         /// <param name="cancellationToken"></param>
         /// <param name="includesProperties"></param>

@@ -10,36 +10,14 @@ namespace Application.Features.Clients.Commands.Create
 {
     public class CreateClientCommandValidator : AbstractValidator<CreateClientCommand>
     {
-        public CreateClientCommandValidator() {
+        public CreateClientCommandValidator()
+        {
             RuleFor(x => x.Name)
                 .NotNull().WithMessage("Имя не должно быть пустым");
             RuleFor(x => x.Surname)
                 .NotNull().WithMessage("Фамилия не должна быть пуста");
             RuleFor(x => x.ProfilePhotoUrl)
                 .MaximumLength(500).WithMessage("URL фото не может быть длиннее 500 символов");
-        }
-
-        private bool BeValidContact(string contact)
-        {
-            return IsValidEmail(contact) || IsValidPhone(contact);
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool IsValidPhone(string phone)
-        {
-            return System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\+?[0-9]{10,15}$");
         }
     }
 }

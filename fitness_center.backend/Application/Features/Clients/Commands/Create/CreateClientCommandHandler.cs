@@ -2,7 +2,6 @@
 using Application.Features.Clients.DTOs;
 using Application.Features.Clients.Errors;
 using AutoMapper;
-using Core.ValueObjects;
 using MediatR;
 using System;
 using System.Collections.Generic;

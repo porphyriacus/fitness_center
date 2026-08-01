@@ -1,5 +1,4 @@
-﻿using Core.ValueObjects;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +10,6 @@ namespace Core.Entities
     /// представляет пользователя
     /// !!! в Application подставить фото профиля по умолчанию
     /// </summary>
-    // Core/Entities/Person.cs
     public abstract class Person : Entity
     {
         public string Name { get; private set; }
