@@ -15,7 +15,7 @@ namespace Application.Features.MembershipTypes.Queries.GetMembershipTypesList
     {
         public async Task<Result<IReadOnlyList<MembershipTypeDto>>> Handle(GetMembershipTypesListQuery request, CancellationToken cancellationToken)
         {
-            List<Expression<Func<MembershipType, bool>>>? filter = null;
+            List<Expression<Func<MembershipType, bool>>>? filter = new();
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {

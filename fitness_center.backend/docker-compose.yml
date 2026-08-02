@@ -12,13 +12,14 @@ services:
     restart: "no"   
     profiles:
       - migrations         # запускается только с флагом --profile migrations
+    working_dir: /src/API
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5000:8080"
       - "5001:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -39,6 +40,7 @@ services:
       - ./data:/app/data   # папка с бд
     depends_on: []
     restart: unless-stopped
+    
 
   # Web UI если нужно параллельно
   # web:
@@ -46,7 +48,7 @@ services:
   #     context: .
   #     dockerfile: Dockerfile
   #   ports:
-  #     - "6000:80"
+  #     - "6000:8080"
   #     - "6001:443"
   #   environment:
   #     - ASPNETCORE_ENVIRONMENT=Development
