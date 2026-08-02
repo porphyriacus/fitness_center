@@ -97,22 +97,26 @@ dotnet run
 ### Запуск через Docker
 
 ```bash
-# Сборка образов
+# Собрать все образы
 docker-compose build
 
-# Запуск контейнеров в фоновом режиме
-docker-compose up -d
+# Или по отдельности
+docker-compose build api
+docker-compose build migrations
 
-# Просмотр логов
+# Применить миграции базы данных
+docker-compose run --rm migrations
+
+# Запустить API в фоновом режиме
+docker-compose up -d api
+
+# Проверить логи 
 docker-compose logs -f api
-
-# Остановка
-docker-compose down
 ```
 
 После запуска:
-- API: `https://localhost:5001/swagger`
-- Web-интерфейс: `https://localhost:6001` (если включён в docker-compose.yml)
+- API: `https://localhost:5000/swagger`
+- Web-интерфейс: `https://localhost:6000` (если включён в docker-compose.yml)
 
 ### Миграции базы данных
 
